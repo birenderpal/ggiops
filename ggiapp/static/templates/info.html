@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block head %}
+<script>
+    $(document).ready(function () {
+        $('#device-details').click(function () {
+            getDeviceDetails('{{type}}');
+
+        })
+        $('#indicator-details').click(function () {            
+            getIndicatorDetails('{{type}}');
+        })
+        $('#manage-devices').click(function () {
+
+
+        })
+        $("a.summary-link").click(function () {
+
+
+        })
+        $("indicator-edit").click(function(){
+            console.log("clicked indicator")
+        })        
+    })
+    function cardClicked(type){
+        console.log("Card clicked function")
+        console.log(type)
+    }
+    function manageIndicator(type) {
+        console.log("in manage indicator")
+        console.log(type)
+        $("#populate").html('')
+
+    }
+    /*     function manageDevices(type) {
+            var output = '<div class="mdl-card mdl-shadow--2dp summary-card" style="margin:10px; width: 800px;background-color: ghostwhite;">'
+            output += '<form>'
+            $.getJSON('/api/' + type + '/device', function (data) {
+            })
+        } */
+
+    function getIndicatorDetails(type) {
+        $.getJSON('/' + type + '/indicatordetails', function (data) {
+            var output = `<table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp" style="width: 1080px;">
+                <thead>
+                    <tr>
+                        <th class="mdl-data-table__cell--non-numeric flex-fill">Indicator</th>
+                        <th class="mdl-data-table__cell--non-numeric flex-fill">Enabled in Splunk for</th>
+                        <th class="mdl-data-table__cell--non-numeric flex-fill">Available in SevOne for</th>
+                    </tr>
+                </thead>
+                <tbody>`
+            console.log(data);
+            $.each(data, function (key, val) {
+                console.log(val);
+                output += `<tr><td class="mdl-data-table__cell--non-numeric">${val.indicatorName}</td>`
+
+                output += `<td class="mdl-data-table__cell--non-numeric">`
+                var list = '<ul style="list-style-type:none;">'
+                $.each(val.splunkDevices, function (key, device) {
+                    list += `<li >
+                            ${device}
+                            </li>`
+
+                })
+                list +=`</ul></td><td class="mdl-data-table__cell--non-numeric"><ul style="list-style-type:none;">`
+                $.each(val.sevoneDevices, function (key, device) {
+                    list += `<li >
+                            ${device}
+                            </li>`
+                })
+                list +='</ul></td>'
+                list +=`<td>
+                        <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect indicator-edit" onclick="manageIndicator('${val.indicatorName}'); return false" href="#">
+                            Manage
+                        </a>
+                        </td>
+                    </tr>`
+                output +=list
+
+                //output += `<td class="mdl-data-table__cell--non-numeric" >${val.sevoneCount}</td></tr>`
+            })
+            output +='</tbody></table>';
+            $('#populate').html(output)
+        })
+    }
+    /*
+    
+        function getIndicatorDetails(type){
+                            $.getJSON('/' + type + '/indicatordetails', function (data) {
+                                var output = '';
+                                $.each(data, function (key, val) {
+                                    console.log(val);
+                                    output += '<div class="mdl-card mdl-shadow--2dp summary-card" style="margin:10px; width: 512px;background-color: ghostwhite;">'
+                                    output += '<div class="mdl-card__title">'
+                                    output += '<h4 class="mdl-card__title-text" style="text-align: center;font-weight:bold;font-size:18px;">' + val.indicatorName + '</h4>'
+                                    output += '</div>'
+                                    output += '<div class="mdl-card__supporting-text">Enabled in Splunk for: ' + val.count + '</div>'
+                                    output += '<div class="mdl-card__supporting-text">Available in SevOne for: ' + val.sevoneCount + '</div>'
+                                    output += '<div class="mdl-card__supporting-text"></div>'
+                                    output += '<div class="mdl-card__actions mdl-card--border">'
+                                    output += '<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">'
+                                    output += 'View Details'
+                                    output += '</a>'
+                                    output += '</div>'
+                                    output += '</div>'
+                                })
+                                $('#populate').html(output)
+                            })
+                        }
+    */
+/*     function getDeviceDetails(type) {
+        var output = '';
+        console.log("in getdeviceDetails")
+        $.getJSON('/' + type + '/devicedetails', function (data) {
+            $.each(data, function (key, val) {
+                console.log(val);
+                output += '<div class="mdl-card mdl-shadow--2dp summary-card" style="margin:10px; width: 31.33%;height:360px;background-color: ghostwhite;">'
+                output += '<div class="mdl-card__title">'
+                output += '<h4 class="mdl-card__title-text" style="text-align:center;font-weight:bold;font-size:18px;">' + val.deviceName + '</h4>'
+                output += '</div>'
+                output += '<div class="mdl-card__supporting-text">Enabled indicators:' + val.count + '</div>'
+                output += '<div class="mdl-card__supporting-text">Available in SevOne:' + val.sevoneCount + '</div>'
+                output += '<div class="mdl-card__actions mdl-card--border">'
+                output += '<a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">'
+                output += 'View Details'
+                output += '</a>'
+                output += '</div>'
+                output += '</div>'
+            })
+            $('#populate').html(output)
+        })
+
+    }     */
+
+    function getDeviceDetails(type) {
+        var output = '';
+        console.log("in getdeviceDetails")
+        $.getJSON('/' + type + '/devicedetails', function (data) {
+            $.each(data, function (key, val) {
+                console.log(val);
+                output += '<div class="mdl-card mdl-shadow--2dp summary-card" style="margin:10px; width: 31.33%;height:360px;background-color: ghostwhite;">'
+                output += `<a class="summary-link" href="#" onclick="cardClicked('${val.deviceName}'); return false">`
+                output += '<div class="mdl-card__title">'
+                output += '<h4 class="mdl-card__title-text" style="text-align:center;font-weight:bold;font-size:18px;">' + val.deviceName + '</h4>'
+                output += '</div>'
+                output += '<div class="mdl-card__supporting-text">Enabled indicators:' + val.count + '</div>'
+                output += '<div class="mdl-card__supporting-text">Available in SevOne:' + val.sevoneCount + '</div>'
+                output += '</a></div>'
+            })
+            $('#populate').html(output)
+        })
+
+    }   
+</script>
+{% endblock %}
+{% block content %}
+<div class="mdl-grid" style="max-width: 1080px; margin-top: 50px">
+    <style>
+        .demo-card-wide.mdl-card {
+            width: 512px;
+            margin: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .demo-card-wide>.mdl-card__title {
+            display: flex;
+            justify-content: center;
+            color: rgba(0, 0, 0, .54);
+            height: 106px;
+
+        }
+
+        .demo-card-wide>.mdl-card__menu {
+            display: flex;
+            justify-content: center;
+
+            color: rgba(0, 0, 0, .54);
+        }
+
+        .mdl-card__supporting-text {
+            display: flex;
+            font-weight: normal;
+            line-height: 1.333;
+            color: #3d3e3f;
+        }
+
+        .mdl-card__title {
+            color: #3d3e3f;
+        }
+    </style>
+
+    <div class="demo-card-wide mdl-card mdl-shadow--2dp" style="background-color: ghostwhite;">
+        <div class="mdl-card__title">
+            <h2 class="mdl_card__supporting-text" style="font-size: 75.9px;font-weight:bold;">{{devices|length}}
+            </h2>
+        </div>
+        <div class="mdl-card__supporting-text">
+            <h2 class="mdl-card__title-text" style="text-align: center;">Devices in {{type}}</h2>
+        </div>
+        <div class="mdl-card__actions mdl-card--border">
+            <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect"
+                id="device-details">
+                View
+            </a>
+            <a class="mdl-button mdl-button--raised mdl-button--colored  mdl-js-ripple-effect" id="manage-devices">
+                Manage
+            </a>
+
+        </div>
+    </div>
+
+    <div class="demo-card-wide mdl-card mdl-shadow--2dp" style="background-color: ghostwhite;">
+        <div class="mdl-card__title">
+            <h2 class="mdl-card__title-text" style="font-size: 75.9px;font-weight:bold;">{{indicators|length}}
+            </h2>
+        </div>
+        <div class="mdl-card__supporting-text">
+            <h2 class="mdl-card__title-text" style="text-align: center;">Indicators in {{type}}</h2>
+        </div>
+        <div class="mdl-card__actions mdl-card--border">
+            <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect"
+                id="indicator-details">
+                View
+            </a>
+            <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect"
+                id="manage-indicators">
+                Manage
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="mdl-grid" style="max-width: 1080px; margin-top: 50px;justify-content: center;">
+    <div id="populate" style="max-width: 1080px;display:flex;justify-content:space-between;flex-wrap: wrap;">
+
+    </div>
+</div>
+{% endblock %}

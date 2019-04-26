@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--
+  <link href="/static/css/material.css" rel="stylesheet">
+  <link href="/static/css/material-icons.css" rel="stylesheet">
+  <script src="/static/js/material.min.js"></script>
+  <script src="/static/js/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> 
+  -->
+  <!--Bootstrap-->
+  
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>  
+  {% block head %}
+  <meta charset="utf-8" />
+  {% endblock %}
+  <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+  <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+  <!-- Material Design icon font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+ <style>
+    .mdl-navigation__link .material-icons{
+      margin-right: 20px;
+    }
+    #search-container{
+    margin-left: 10%;    
+    margin-right: 10%;
+    margin-top: 100px;
+    display: flex;
+    justify-content: center;
+    }
+    .mdl-data-table td {
+    text-align: left;
+    }
+    .mdl-data-table th {
+    text-align: left;
+    }
+
+  </style>
+  
+  <meta charset="utf-8" />
+  
+</head>
+
+<body id="page-top">
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+        <header class="mdl-layout__header">
+          <div class="mdl-layout__header-row">
+            <!-- Title -->
+            
+                
+              <a class="mdl-navigation__link" href="{{url_for('index')}}">
+                  <span class="mdl-layout-title">     
+                GGI Splunk Stream
+              </span>
+              </a>
+            
+            <!-- Add spacer, to align navigation to the right -->
+            <div class="mdl-layout-spacer"></div>
+            <!-- Navigation. We hide it in small screens. -->
+            <nav class="mdl-navigation mdl-layout--large-screen-only">
+              <a class="mdl-navigation__link" href="{{url_for('splunk')}}">Splunk</a>
+              <a class="mdl-navigation__link" href="{{url_for('sevone')}}">SevOne</a>
+            </nav>
+          </div>
+        </header>
+
+        <main class="mdl-layout__content">
+          <div class="page-content">
+              {% block content %} 
+              {% endblock %}
+          </div>
+        </main>
+      </div>
+
+</body>
+
+</html>
