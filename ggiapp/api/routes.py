@@ -24,7 +24,7 @@ def get_devices():
         splunkapp = SplunkApp.SplunkApp(HOSTNAME)                
         return jsonify({"devices":splunkapp.get_splunk_devices()})
 
-@app.route('/api/splunk/indicator/<string:indicator>')
+@app.route('/api/splunk/indicator/<string:indicator>',methods=['GET','PUT','DELETE'])
 def get_indicators(indicator):
     if request.method == 'GET':
         splunkapp = SplunkApp.SplunkApp(HOSTNAME)        
@@ -42,9 +42,25 @@ def get_indicators(indicator):
             splunkapp.disable_indicator(indicator=indicator)
             return jsonify({"status":"success"})
         except Exception as ex:
-            return jsonify({"status":str(ex)})            
+            return jsonify({"status":str(ex)})   
+@app.route('/api/splunk/indicator/<string:indicator>/device/<string:device>',methods=['POST','DELETE'])
+def enable_indicator_dev(device,indicator):
+    if request.method == 'POST':
+        splunkapp=SplunkApp.SplunkApp(HOSTNAME)
+        try:
+            splunkapp.enable_indicator(indicator=indicator,device=device)
+            return jsonify({"status":"success"})
+        except Exception as ex:
+            return jsonify({"status":str(ex)})
+    if request.method == 'DELETE':
+        splunkapp=SplunkApp.SplunkApp(HOSTNAME)
+        try:
+            splunkapp.disable_indicator(indicator=indicator,device=device)
+            return jsonify({"status":"success"})
+        except Exception as ex:
+            return jsonify({"status":str(ex)})                 
 
-@app.route('/api/splunk/indicator/<string:indicator>/enable')
+""" @app.route('/api/splunk/indicator/<string:indicator>/enable')
 def enable_indicator(indicator):
     if request.method == 'GET':
         splunkapp=SplunkApp.SplunkApp(HOSTNAME)
@@ -52,7 +68,7 @@ def enable_indicator(indicator):
             splunkapp.enable_indicator(indicator)
             return jsonify({"status":"success"})
         except Exception as ex:
-            return jsonify({"status":str(ex)})        
+            return jsonify({"status":str(ex)})         
 
 @app.route('/api/splunk/indicator/<string:indicator>/disable')
 def disable_indicator(indicator):
@@ -63,14 +79,14 @@ def disable_indicator(indicator):
             return jsonify({"status":"success"})
         except Exception as ex:
             return jsonify({"status":str(ex)})
-
-@app.route('/api/splunk/device/<string:device>')
+"""
+@app.route('/api/splunk/device/<string:device>',methods=['GET','POST','PUT','DELETE'])
 def get_device(device):
     if request.method == 'GET':
         splunkapp=SplunkApp.SplunkApp(HOSTNAME)
         #splunkapp.get_splunk_device_metrics(device)
         return jsonify(splunkapp.get_splunk_device(device))
-    if request.method == 'PUT':
+    if request.method == 'POST':
         splunkapp=SplunkApp.SplunkApp(HOSTNAME)        
         try:
             splunkapp.enable_indicator(device=device)
@@ -85,19 +101,19 @@ def get_device(device):
         except Exception as ex:
             return jsonify({"status":str(ex)})
             
-@app.route('/api/splunk/device/<string:device>/indicator/<string:indicator>')
+@app.route('/api/splunk/device/<string:device>/indicator/<string:indicator>',methods=['POST','DELETE'])
 def enable_dev_indicator(device,indicator):
-    if request.method == 'GET':
+    if request.method == 'POST':
         splunkapp=SplunkApp.SplunkApp(HOSTNAME)
         try:
-            splunkapp.splunkapp.enable_indicator(indicator=indicator,device=device)
+            splunkapp.enable_indicator(indicator=indicator,device=device)
             return jsonify({"status":"success"})
         except Exception as ex:
             return jsonify({"status":str(ex)})
     if request.method == 'DELETE':
         splunkapp=SplunkApp.SplunkApp(HOSTNAME)
         try:
-            splunkapp.splunkapp.disable_indicator(indicator=indicator,device=device)
+            splunkapp.disable_indicator(indicator=indicator,device=device)
             return jsonify({"status":"success"})
         except Exception as ex:
             return jsonify({"status":str(ex)})

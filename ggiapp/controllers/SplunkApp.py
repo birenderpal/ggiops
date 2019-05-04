@@ -52,11 +52,15 @@ class SplunkApp():
             indicator_details={}
         return indicator_details       
 
-    def get_sevone_indicators(self):
+    def get_sevone_indicators(self,device=None):
         indicators=set()
         INVENTORY = self.get_sevone_inventory()
         for data in INVENTORY:
-            indicators.add(data['indicatorName'])
+            if device is None:
+                indicators.add(data['indicatorName'])
+            else:
+                if device == data['deviceName']:
+                    indicators.add(data['indicatorName'])
         return list(indicators)
 
     def enable_indicator(self,indicator=None,device=None):
@@ -67,13 +71,15 @@ class SplunkApp():
         if device is None and indicator is None:
             raise Exception('Invalid method call')
         if device is None:
-            devices=self.get_sevone_devices()                  
+            devices=self.get_sevone_devices()
+            indicators=[indicator]                  
         else:
-            devices=[str(device)]
+            devices=[str(device)]            
         if indicator is None:
-            indicators=self.get_splunk_indicators()
-        else:
-            indicators=[indicator]
+            indicators=self.get_sevone_indicators(device)
+            devices=[device]
+        else:            
+            indicators=[str(indicator)]
         for d in devices:
             for i in indicators:
                 message= {"deviceName":d,"indicatorName":i,"toSplunk":'true'}
@@ -90,7 +96,7 @@ class SplunkApp():
         if device is None:
             devices=self.get_sevone_devices()                  
         else:
-            devices=[str(device)]
+            devices=[str(device)]            
         if indicator is None:
             indicators=self.get_splunk_indicators()
         else:

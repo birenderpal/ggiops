@@ -1,230 +1,296 @@
-{% extends "base.html" %}
-{% block head %}
-<script type="text/javascript">
+<!doctype html>
+<html>
+
+<head>
+
+  <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+  <script type="text/javascript">
+    window.mdc.autoInit();
     $(document).ready(function () {
-        $('#search-container').keyup(function(){
-            var searchField = $('#search-container').val();
+      $('#search').keyup(function () {
+        //$('#result').hide()
+        //$('#result-list').html('')
+        var searchField = $('#search').val();
+        console.log(searchField.length)
+        var output="";
+        var source=$('#link').children().text().trim()
+        if (searchField.length >= 2) {
+          var regex = new RegExp(searchField, "i");
 
-        })
+          $('#result').show()
+          
+          output = '<ul class="mdc-list mdc-list--two-line">'
+          $.getJSON(`/api/${source}/devices`, function (data) {            
+            var list=""
+            $.each(data.devices, function (key, val) {
+              if ((val.search(regex) != -1)) {
+                list += `
+              <li class="mdc-list-item" onclick="itemClicked('${val}','device','${source}'); return false">
+                  <span class="mdc-list-item__text">
+                  <span class="mdc-list-item__primary-text">${val}</span>
+                  <span class="mdc-list-item__secondary-text">Device</span>
+                  </span>
+              </li>
+              <li role="separator" class="mdc-list-divider"></li>
+              `
+              }
+            });
+            output+=list
+            $('#result-list').html(output)
+          })          
+          $.getJSON(`/api/${source}/indicators`, function (data) {            
+            var list=""
+            $.each(data.indicators, function (key, val) {
+              if ((val.search(regex) != -1)) {
+                list += `
+              <li class="mdc-list-item" onclick="itemClicked('${val}','indicator','${source}'); return false">
+                  <span class="mdc-list-item__text">
+                  <span class="mdc-list-item__primary-text">${val}</span>
+                  <span class="mdc-list-item__secondary-text">Indicator</span>
+                  </span>                  
+              </li>
+              <li role="separator" class="mdc-list-divider"></li>
+              `
+              }
+            });
+            output +=list
+            output += '</ul>'
+            $('#result-list').html(output)
+          });
+        }
+        else {
+          console.log("Search field smaller")
+          $('#result-list').html('')
+          $('#result').hide()
+        }
+      });
+    });
+    function toggle(disableObj, e) {
+      disableObj=JSON.parse(unescape(disableObj))
+      $(`#${e}`).toggleClass('mdc-switch--checked')    
+      
+      //$(e).toggleClass('mdc-switch--checked')
+      if ($(`#${e}`).hasClass('mdc-switch--checked')) {
+        $.ajax({
+          dataType: 'json',
+          url: `/api/splunk/device/${disableObj.device}/indicator/${disableObj.indicator}`,
+          type: 'POST',
+          success: function (data) {
+            console.log(data)
+          }
+        });
 
-    })
-    function getIndicatorDetails(type) {
-        $.getJSON('/' + type + '/indicatordetails', function (data) {
-            var output = `<table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp" style="width: 1080px;">
-                <thead>
-                    <tr>
-                        <th class="mdl-data-table__cell--non-numeric flex-fill">Indicator</th>
-                        <th class="mdl-data-table__cell--non-numeric flex-fill">Enabled in Splunk for</th>
-                        <th class="mdl-data-table__cell--non-numeric flex-fill">Available in SevOne for</th>
-                    </tr>
-                </thead>
-                <tbody>`
-            console.log(data);
-            $.each(data, function (key, val) {
-                console.log(val);
-                output += `<tr><td class="mdl-data-table__cell--non-numeric">${val.indicatorName}</td>`
+      }
+      else {
+        $.ajax({
+          dataType: 'json',
+          url: `/api/splunk/device/${disableObj.device}/indicator/${disableObj.indicator}`,
+          type: 'DELETE',
+          success: function (data) {
+            console.log(data)
+          }
+        });
 
-                output += `<td class="mdl-data-table__cell--non-numeric">`
-                var list = '<ul style="list-style-type:none;">'
-                $.each(val.splunkDevices, function (key, device) {
-                    list += `<li >
-                            ${device}
-                            </li>`
-
-                })
-                list +=`</ul></td><td class="mdl-data-table__cell--non-numeric"><ul style="list-style-type:none;">`
-                $.each(val.sevoneDevices, function (key, device) {
-                    list += `<li >
-                            ${device}
-                            </li>`
-                })
-                list +='</ul></td>'
-                output +=list
-
-                //output += `<td class="mdl-data-table__cell--non-numeric" >${val.sevoneCount}</td></tr>`
-            })
-            output +='</tbody></table>';
-            $('#populate').html(output)
-        })
+      }      
     }
-    function manageSplunk(){
+    function linkLoad(link){
+      $('#main-content').show()
+      $('#search').val("");
+      $('#result').hide();
+      var output=`<div class="mdc-text-field-helper-text mdc-text-field-helper-text--persistent" aria-hidden="true">${link}
+              </div>`
+      $('#link').html(output)      
+    }
+    function toggleall(data, item, type1, type2, arrayList) {
+      console.log(typeof (data))
+      console.log(unescape(data))
+      console.log(JSON.parse(unescape(data)))
+      data = JSON.parse(unescape(data))
+      $('.toggle-all').toggleClass('mdc-switch--checked');
+      if ($('.toggle-all').hasClass('mdc-switch--checked')) {
+        $('.switch-items').addClass('mdc-switch--checked');
+        /*
+        $.each(data[item][arrayList], function (key, value) {
+          $.ajax({
+            dataType: 'json',
+            url: `/api/splunk/${type1}/${item}/${type2}/${value}`,
+            type: 'POST',
+            success: function (result) {
+              console.log(result)
+            }
+          });
+        });
+        */
+        $.post(`/api/splunk/${type1}/${item}`,function (result) {
+              console.log(result)
+            });
+      }      
+      else {
+        $('.switch-items').removeClass('mdc-switch--checked');
+        $.ajax({
+            dataType: 'json',
+            url: `/api/splunk/${type1}/${item}`,
+            type: 'DELETE',
+            success: function (result) {
+              console.log(result)
+            }
+          });
+/*
+        $.each(data[item][arrayList], function (key, value) {
+          $.ajax({
+            dataType: 'json',
+            url: `/api/splunk/${type1}/${item}/${type2}/${value}`,
+            type: 'DELETE',
+            success: function (result) {
+              console.log(result)
+            }
+          });
+        });*/
+      }
+    }
+    function itemClicked(item, type1,source) {
+      $.getJSON(`/api/${source}/${type1}/${item}`, function (data) {
+        var arrayList;
+        var disableObj = new Object();
+        var type2;
+        disableObj[type1] = item
+        if (type1 == 'device') {
+          arrayList = "indicators"
+          type2 = "indicator"
+        }
+        if (type1 == 'indicator') {
+          arrayList = "devices"
+          type2 = "device"
+        }
+        var output = ""
+        var switchclass=['mdc-switch'];
+        if (source=='splunk'){
+          switchclass[0]="mdc-switch mdc-switch--checked"
+        }
+        $("#result-list").html(output)
+        passObj = escape(JSON.stringify(data))
+        output += `
+                  <ul class="mdc-list">
+                    <li class="mdc-list-item" style="display:flex;justify-content:space-between;cursor:auto;">
+                      <span class="mdc-list-item__text mdc-typography--headline6">${item}</span>          
+                        <div class="${switchclass} toggle-all" onclick="toggleall('${passObj}','${item}','${type1}','${type2}','${arrayList}'); return false">
+                          <div class="mdc-switch__track" ></div>
+                            <div class="mdc-switch__thumb-underlay">
+                              <div class="mdc-switch__thumb" >
+                              <input type="checkbox" id="basic-switch" class="mdc-switch__native-control" role="switch">
+                            </div>
+                          </div>                    
+                          </div>
+                  
+                    </li>
+                    <h3 class="mdc-list-group__subheader mdc-typography--headline6">${arrayList}</h3>`
+        $.each(data[item][arrayList], function (key, value) {          
+          if (source=='sevone'){
+            var switchclass=["mdc-switch"]
+              $.getJSON(`/api/splunk/${type1}/${item}`,function(result){
+                if ($.isEmptyObject(result)){
+                    console.log(value+" Not enabled in Splunk")
+                    switchclass[0]="mdc-switch"
+                }
+                else{
+                  list=result[item][arrayList]
+                  if (list.includes(value)){
+                    switchclass[0]="mdc-switch mdc-switch--checked"
+                  }
+                }
+                disableObj[type2] = value;
+                passObj = escape(JSON.stringify(disableObj))
+                   output += `
+                    <li class="mdc-list-item" style="display:flex;justify-content:space-between;cursor:auto;">
+                        <span class="mdc-list-item__text mdc-typography--subtitle2">${value}</span>
+                        <div class="switch-items ${switchclass}" id=${value} onclick="toggle('${passObj}','${value}'); return false">
+                              <div class="mdc-switch__track" ></div>
+                              <div class="mdc-switch__thumb-underlay">
+                                <div class="mdc-switch__thumb" >
+                                  <input type="checkbox" id="basic-switch" class="mdc-switch__native-control" role="switch">
+                                </div>
+                              </div>                    
+                            </div> 
+                        </li>
+                        <li role="separator" class="mdc-list-divider"></li>`
+                $("#result-list").html(output)
+              })                            
+          }
+          else{
+            switchclass=["mdc-switch mdc-switch--checked"]            
+            disableObj[type2] = value;
+            passObj = escape(JSON.stringify(disableObj))
+            output += `
+                    <li class="mdc-list-item" style="display:flex;justify-content:space-between;cursor:auto;">
+                        <span class="mdc-list-item__text mdc-typography--subtitle2">${value}</span>
+                        <div class="switch-items ${switchclass}" id=${value} onclick="toggle('${passObj}','${value}'); return false">
+                              <div class="mdc-switch__track" ></div>
+                              <div class="mdc-switch__thumb-underlay">
+                                <div class="mdc-switch__thumb" >
+                                  <input type="checkbox" id="basic-switch" class="mdc-switch__native-control" role="switch">
+                                </div>
+                              </div>                    
+                            </div> 
+                        </li>
+                        <li role="separator" class="mdc-list-divider"></li>`
+                $("#result-list").html(output)
+          }          
+        })
+        //output += '</ul>'
         
+      });
     }
-function getDeviceDetails(type) {
-        $.getJSON('/' + type + '/devicedetails', function (data) {
-            var output = `<table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp" >
-                <thead>
-                    <tr>
-                        <th class="mdl-data-table__cell--non-numeric flex-fill">Device</th>
-                        <th class="mdl-data-table__cell--non-numeric flex-fill">Avaialable Indicators</th>                        
-                    </tr>
-                </thead>
-                <tbody>`            
-            $.each(data, function (key, val) {
-                console.log(val);
-                output += `<tr><td class="mdl-data-table__cell--non-numeric">${val.deviceName}</td>`
-                output += `<td class="mdl-data-table__cell--non-numeric">`
-                var list = '<ul style="list-style-type:none;">'
-                $.each(val.indicators, function (key, indicator) {
-                    list += `<li >
-                            ${indicator}
-                            </li>`
+    function home(){
+      $('#main-content').hide()
+    }
+  </script>
+</head>
 
-                })
-                list +=`</ul></td>`
-                output +=list
+<body class="mdc-typography">
+  <div>
+    <header class="mdc-top-app-bar mdc-top-app-bar--fixed mdc-elevation--z4" style="top:0px;left:0px;background-color: #5f259f">
+      <div class="mdc-top-app-bar__row">
+        <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+          <button class="mdc-button material-icons mdc-top-app-bar__navigation-icon" onclick="home()">
+            home
+          </button >
 
-                //output += `<td class="mdl-data-table__cell--non-numeric" >${val.sevoneCount}</td></tr>`
-            })
-            output +='</tbody></table>';
-            $('#populate').html(output)
-        })
-    }   
-    /*     
-     function getDeviceDetails(type) {
-        var output = '';
-        console.log("in getdeviceDetails")
-        $.getJSON('/' + type + '/devicedetails', function (data) {
-            $.each(data, function (key, val) {
-                console.log(val);
-                output += '<div class="mdl-card mdl-shadow--2dp summary-card" style="margin:10px; width: 100%;height:360px;background-color: ghostwhite;">'
-                output += `<a class="summary-link" href="#" onclick="cardClicked('${val.deviceName}'); return false">`
-                output += '<div class="mdl-card__title">'
-                output += '<h4 class="mdl-card__title-text" style="text-align:center;font-weight:bold;font-size:18px;">' + val.deviceName + '</h4>'
-                output += '</div>'
-                output += `<div class="mdl-card__supporting-text">
-                                <div class="mdl-card__title-text" >Enabled indicators</div>
-                            </div>`
-                    
-                var list = `<div class="mdl-card__title-text" >`
-                            //<ul style="list-style-type:none;font-size: 11px;-webkit-columns: 2">`                
-                $.each(val.indicators, function (key, indicator) {
-                    list += `<div >
-                            ${indicator}
-                            </div>`
+          <button class="mdc-button  mdc-button--dense" style="color:white" onclick="linkLoad('splunk')">splunk</button>
+          <button class="mdc-button  mdc-button--dense" style="color:white" onclick="linkLoad('sevone')">sevone</button>
+        </section>
+        <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end">
+          <button class="mdc-button material-icons mdc-top-app-bar__navigation-icon">
+            person
+          </button>
 
-                })
-                list +=`</div>`
-                output +=list                    
-                //output += '<div class="mdl-card__supporting-text">Available in SevOne:' + val.sevoneCount + '</div>'
-                output += '</a></div>'
-            })
-            $('#populate').html(output)
-        })
+        </section>
+      </div>
+    </header>
 
-    }       
-    */
-</script> 
-{% endblock %}
-
-{% block content %}
-<!--
-<div class="mdl-grid" style="max-width: 1080px;">
-    <div class="mdl-cell mdl-cell--8-col mdl-textfield mdl-js-textfield" id="search-container">
-        <input class="mdl-textfield__input" type="text" id="sample1">
-        <label class="mdl-textfield__label" for="sample1">Search...</label>
-    </div>
-</div>
--->
-<div class="mdl-grid" style="max-width: 1080px; margin-top: 50px">
-    <style>
-        .demo-card-wide.mdl-card {
-            width: 512px;
-            margin: 10px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .demo-card-wide>.mdl-card__title {
-            display: flex;
-            justify-content: center;
-            color: rgba(0, 0, 0, .54);
-            height: 106px;
-
-        }
-
-        .demo-card-wide>.mdl-card__menu {
-            display: flex;
-            justify-content: center;
-
-            color: rgba(0, 0, 0, .54);
-        }
-
-        .mdl-card__supporting-text {
-            display: flex;
-            font-weight: normal;
-            line-height: 1.333;
-            color: #3d3e3f;
-            font-size:16px;
-        }
-        .mdl-card__title-text{
-            font-size:16px;
-        }
-        .mdl-card__title {
-            color: #3d3e3f;
-        }
-
-    </style>
-
-    <div class="demo-card-wide mdl-card mdl-shadow--2dp" style="background-color: ghostwhite;">
-        <div class="mdl-card__title">
-            <h2 class="mdl_card__supporting-text" style="font-size: 50px;font-weight:bold;">Splunk
-            </h2>
+    <main class="mdc-top-app-bar--fixed-adjust" style="background-color: #e8e8e8;height: 100vw;">
+      <div class="mdc-layout-grid" id="main-content" style="width: 50vw;height:auto;margin-top:10rem;display: none;">
+        <div class="mdc-text-field mdc-text-field--no-label mdc-text-field--fullwidth mdc-text-field--with-trailing-icon">
+          <i class="material-icons mdc-text-field__icon">search</i>
+          <input class="mdc-text-field__input" id="search" style="border-bottom-color: #5f259f;">
+          <div class="mdc-line-ripple"></div>
         </div>
-        <div class="mdl-card__supporting-text" style="display: flex;justify-content: space-between">
-            <div class="mdl-card__title-text" style="text-align: center;">Enabled Devices:</div>
-            <div class="mdl-card__title-text" style="text-align: center;">{{sp_devices|length}}</div>
+        <div class="mdc-text-field-helper-line" id="link">
         </div>
-        <div class="mdl-card__supporting-text" style="display: flex;justify-content: space-between">
-            <div class="mdl-card__title-text" >Enabled Indicators:</div>
-            <div class="mdl-card__title-text">{{sp_indicators|length}}</div>
+        <div class="mdc-elevation--z1" style="margin-top:3rem;" id="result">
+          <div class="mdc-list-group" id="result-list" style="background-color: #ffff;">
+          </div>
         </div>
+      </div>
+    </main>
+  </div>
+  <script type="text/javascript">
+    window.mdc.autoInit();
+  </script>
+</body>
 
-        <div class="mdl-card__actions mdl-card--border">
-            <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect"
-                id="splunk-details" onclick="getDeviceDetails('splunk');return false;">
-                View
-            </a>
-            <a class="mdl-button mdl-button--raised mdl-button--colored  mdl-js-ripple-effect" id="manage-devices">
-                Manage
-            </a>
-
-        </div>
-    </div>
-
-    <div class="demo-card-wide mdl-card mdl-shadow--2dp" style="background-color: ghostwhite;">
-        <div class="mdl-card__title">
-            <h2 class="mdl-card__title-text" style="font-size: 50px;font-weight:bold;">SevOne
-            </h2>
-        </div>
-        <div class="mdl-card__supporting-text" style="display: flex;justify-content: space-between">
-                <div class="mdl-card__title-text" style="text-align: center;">Available Devices:</div>
-                <div class="mdl-card__title-text" style="text-align: center;">{{s1_devices|length}}</div>
-            </div>
-            <div class="mdl-card__supporting-text" style="display: flex;justify-content: space-between">
-                <div class="mdl-card__title-text" >Available Indicators:</div>
-                <div class="mdl-card__title-text">{{s1_indicators|length}}</div>
-            </div>
-            <div class="mdl-card__actions mdl-card--border">
-            <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect" onclick="getDeviceDetails('sevone');return false;"
-                id="sevone-details">
-                View
-            </a>
-            <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect"
-                id="manage-indicators">
-                Manage
-            </a>
-
-        </div>
-
-    </div>
-
-</div>
-
-<div class="mdl-grid" style="max-width: 1080px; margin-top: 50px;justify-content: center;">
-        <div id="populate" style="max-width: 1080px;display:flex;justify-content:space-between;flex-wrap: wrap;">
-    
-        </div>
-    </div>
-
-{% endblock %}
+</html>
