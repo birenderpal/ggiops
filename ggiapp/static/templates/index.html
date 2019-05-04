@@ -17,16 +17,16 @@
         //$('#result-list').html('')
         var searchField = $('#search').val();
         console.log(searchField.length)
-        var output="";
-        var source=$('#link').children().text().trim()
+        var output = "";
+        var source = $('#link').children().text().trim()
         if (searchField.length >= 2) {
           var regex = new RegExp(searchField, "i");
 
           $('#result').show()
-          
+
           output = '<ul class="mdc-list mdc-list--two-line">'
-          $.getJSON(`/api/${source}/devices`, function (data) {            
-            var list=""
+          $.getJSON(`/api/${source}/devices`, function (data) {
+            var list = ""
             $.each(data.devices, function (key, val) {
               if ((val.search(regex) != -1)) {
                 list += `
@@ -40,11 +40,11 @@
               `
               }
             });
-            output+=list
+            output += list
             $('#result-list').html(output)
-          })          
-          $.getJSON(`/api/${source}/indicators`, function (data) {            
-            var list=""
+          })
+          $.getJSON(`/api/${source}/indicators`, function (data) {
+            var list = ""
             $.each(data.indicators, function (key, val) {
               if ((val.search(regex) != -1)) {
                 list += `
@@ -58,7 +58,7 @@
               `
               }
             });
-            output +=list
+            output += list
             output += '</ul>'
             $('#result-list').html(output)
           });
@@ -71,9 +71,9 @@
       });
     });
     function toggle(disableObj, e) {
-      disableObj=JSON.parse(unescape(disableObj))
-      $(`#${e}`).toggleClass('mdc-switch--checked')    
-      
+      disableObj = JSON.parse(unescape(disableObj))
+      $(`#${e}`).toggleClass('mdc-switch--checked')
+
       //$(e).toggleClass('mdc-switch--checked')
       if ($(`#${e}`).hasClass('mdc-switch--checked')) {
         $.ajax({
@@ -96,15 +96,24 @@
           }
         });
 
-      }      
+      }
     }
-    function linkLoad(link){
-      $('#main-content').show()
+    function linkLoad(link) {
+      $('#home-page').hide();
       $('#search').val("");
       $('#result').hide();
-      var output=`<div class="mdc-text-field-helper-text mdc-text-field-helper-text--persistent" aria-hidden="true">${link}
+      var output = `<div class="mdc-text-field-helper-text mdc-text-field-helper-text--persistent" aria-hidden="true">${link}
               </div>`
-      $('#link').html(output)      
+      $('#link').html(output)
+      //$('#main-content').show()
+      $('#link-content').show()
+    }
+    function createSevOneCard(){
+      $.getJSON()
+    }
+
+    function createSplunkCard(){
+
     }
     function toggleall(data, item, type1, type2, arrayList) {
       console.log(typeof (data))
@@ -126,34 +135,34 @@
           });
         });
         */
-        $.post(`/api/splunk/${type1}/${item}`,function (result) {
-              console.log(result)
-            });
-      }      
+        $.post(`/api/splunk/${type1}/${item}`, function (result) {
+          console.log(result)
+        });
+      }
       else {
         $('.switch-items').removeClass('mdc-switch--checked');
         $.ajax({
-            dataType: 'json',
-            url: `/api/splunk/${type1}/${item}`,
-            type: 'DELETE',
-            success: function (result) {
-              console.log(result)
-            }
-          });
-/*
-        $.each(data[item][arrayList], function (key, value) {
-          $.ajax({
-            dataType: 'json',
-            url: `/api/splunk/${type1}/${item}/${type2}/${value}`,
-            type: 'DELETE',
-            success: function (result) {
-              console.log(result)
-            }
-          });
-        });*/
+          dataType: 'json',
+          url: `/api/splunk/${type1}/${item}`,
+          type: 'DELETE',
+          success: function (result) {
+            console.log(result)
+          }
+        });
+        /*
+                $.each(data[item][arrayList], function (key, value) {
+                  $.ajax({
+                    dataType: 'json',
+                    url: `/api/splunk/${type1}/${item}/${type2}/${value}`,
+                    type: 'DELETE',
+                    success: function (result) {
+                      console.log(result)
+                    }
+                  });
+                });*/
       }
     }
-    function itemClicked(item, type1,source) {
+    function itemClicked(item, type1, source) {
       $.getJSON(`/api/${source}/${type1}/${item}`, function (data) {
         var arrayList;
         var disableObj = new Object();
@@ -168,9 +177,9 @@
           type2 = "device"
         }
         var output = ""
-        var switchclass=['mdc-switch'];
-        if (source=='splunk'){
-          switchclass[0]="mdc-switch mdc-switch--checked"
+        var switchclass = ['mdc-switch'];
+        if (source == 'splunk') {
+          switchclass[0] = "mdc-switch mdc-switch--checked"
         }
         $("#result-list").html(output)
         passObj = escape(JSON.stringify(data))
@@ -189,23 +198,23 @@
                   
                     </li>
                     <h3 class="mdc-list-group__subheader mdc-typography--headline6">${arrayList}</h3>`
-        $.each(data[item][arrayList], function (key, value) {          
-          if (source=='sevone'){
-            var switchclass=["mdc-switch"]
-              $.getJSON(`/api/splunk/${type1}/${item}`,function(result){
-                if ($.isEmptyObject(result)){
-                    console.log(value+" Not enabled in Splunk")
-                    switchclass[0]="mdc-switch"
+        $.each(data[item][arrayList], function (key, value) {
+          if (source == 'sevone') {
+            var switchclass = ["mdc-switch"]
+            $.getJSON(`/api/splunk/${type1}/${item}`, function (result) {
+              if ($.isEmptyObject(result)) {
+                console.log(value + " Not enabled in Splunk")
+                switchclass[0] = "mdc-switch"
+              }
+              else {
+                list = result[item][arrayList]
+                if (list.includes(value)) {
+                  switchclass[0] = "mdc-switch mdc-switch--checked"
                 }
-                else{
-                  list=result[item][arrayList]
-                  if (list.includes(value)){
-                    switchclass[0]="mdc-switch mdc-switch--checked"
-                  }
-                }
-                disableObj[type2] = value;
-                passObj = escape(JSON.stringify(disableObj))
-                   output += `
+              }
+              disableObj[type2] = value;
+              passObj = escape(JSON.stringify(disableObj))
+              output += `
                     <li class="mdc-list-item" style="display:flex;justify-content:space-between;cursor:auto;">
                         <span class="mdc-list-item__text mdc-typography--subtitle2">${value}</span>
                         <div class="switch-items ${switchclass}" id=${value} onclick="toggle('${passObj}','${value}'); return false">
@@ -218,11 +227,11 @@
                             </div> 
                         </li>
                         <li role="separator" class="mdc-list-divider"></li>`
-                $("#result-list").html(output)
-              })                            
+              $("#result-list").html(output)
+            })
           }
-          else{
-            switchclass=["mdc-switch mdc-switch--checked"]            
+          else {
+            switchclass = ["mdc-switch mdc-switch--checked"]
             disableObj[type2] = value;
             passObj = escape(JSON.stringify(disableObj))
             output += `
@@ -238,27 +247,30 @@
                             </div> 
                         </li>
                         <li role="separator" class="mdc-list-divider"></li>`
-                $("#result-list").html(output)
-          }          
+            $("#result-list").html(output)
+          }
         })
         //output += '</ul>'
-        
+
       });
     }
-    function home(){
-      $('#main-content').hide()
+    function home() {
+      $('#link-content').hide()
+      $('#home-page').show()
+      $('#home-page').text("GGI Ops Splunk Feed management")
     }
   </script>
 </head>
 
 <body class="mdc-typography">
   <div>
-    <header class="mdc-top-app-bar mdc-top-app-bar--fixed mdc-elevation--z4" style="top:0px;left:0px;background-color: #5f259f">
+    <header class="mdc-top-app-bar mdc-top-app-bar--fixed mdc-elevation--z4"
+      style="top:0px;left:0px;background-color: #5f259f">
       <div class="mdc-top-app-bar__row">
         <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
           <button class="mdc-button material-icons mdc-top-app-bar__navigation-icon" onclick="home()">
             home
-          </button >
+          </button>
 
           <button class="mdc-button  mdc-button--dense" style="color:white" onclick="linkLoad('splunk')">splunk</button>
           <button class="mdc-button  mdc-button--dense" style="color:white" onclick="linkLoad('sevone')">sevone</button>
@@ -273,17 +285,25 @@
     </header>
 
     <main class="mdc-top-app-bar--fixed-adjust" style="background-color: #e8e8e8;height: 100vw;">
-      <div class="mdc-layout-grid" id="main-content" style="width: 50vw;height:auto;margin-top:10rem;display: none;">
-        <div class="mdc-text-field mdc-text-field--no-label mdc-text-field--fullwidth mdc-text-field--with-trailing-icon">
-          <i class="material-icons mdc-text-field__icon">search</i>
-          <input class="mdc-text-field__input" id="search" style="border-bottom-color: #5f259f;">
-          <div class="mdc-line-ripple"></div>
-        </div>
-        <div class="mdc-text-field-helper-line" id="link">
-        </div>
-        <div class="mdc-elevation--z1" style="margin-top:3rem;" id="result">
-          <div class="mdc-list-group" id="result-list" style="background-color: #ffff;">
+      <div class="mdc-layout-grid" id="main-content" style="width: 50vw;height:auto;margin-top:10rem;">
+        <div id="link-content" style="display: none;">
+          <div
+            class="mdc-text-field mdc-text-field--no-label mdc-text-field--fullwidth mdc-text-field--with-trailing-icon">
+            <i class="material-icons mdc-text-field__icon">search</i>
+            <input class="mdc-text-field__input" id="search" style="border-bottom-color: #5f259f;">
+            <div class="mdc-line-ripple"></div>
           </div>
+          <div class="mdc-text-field-helper-line" id="link">
+          </div>
+          <div class="mdc-elevation--z1" style="margin-top:3rem;" id="result">
+            <div class="mdc-list-group" id="result-list" style="background-color: #ffff;">
+            </div>
+          </div>
+        </div>
+        <div id="home-page">
+          <script>
+            home();
+            </script>
         </div>
       </div>
     </main>
