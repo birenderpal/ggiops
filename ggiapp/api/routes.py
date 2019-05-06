@@ -39,6 +39,7 @@ class SplunkDevices(Resource):
         notes='get device details in splunk',
         description='get device details in splunk',
         summary='get enabled devices',
+        nickname='/splunk/devices',
         tags='splunk',
         responseMessages=[
             {
@@ -215,10 +216,10 @@ class SplunkDeviceIndicator(Resource):
             }
           ]
     )
-    def post(self,device):
+    def post(self,device,indicator):
         splunkapp=SplunkApp.SplunkApp(HOSTNAME)        
         try:
-            splunkapp.enable_indicator(device=device)
+            splunkapp.enable_indicator(device=device,indicator=indicator)
             return jsonify({"status":"success"})
         except Exception as ex:
             return jsonify({"status":str(ex)})
@@ -233,14 +234,14 @@ class SplunkDeviceIndicator(Resource):
             }
           ]
     )            
-    def delete(self,device):
+    def delete(self,device,indicator):
         splunkapp=SplunkApp.SplunkApp(HOSTNAME)
         try:
-            splunkapp.disable_indicator(device=device)
+            splunkapp.disable_indicator(device=device,indicator=indicator)
             return jsonify({"status":"success"})
         except Exception as ex:
             return jsonify({"status":str(ex)})
-api.add_resource(SplunkDeviceIndicator,'/api/splunk/device/<string:device>/indicator/<string:indictor>')
+api.add_resource(SplunkDeviceIndicator,'/api/splunk/device/<string:device>/indicator/<string:indicator>')
 
 class SevOneIndicators(Resource):   
     @swagger.operation(

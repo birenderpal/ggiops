@@ -13,18 +13,14 @@
     window.mdc.autoInit();
     $(document).ready(function () {
       $('#search').keyup(function () {
-        //$('#result').hide()
-        //$('#result-list').html('')
         var searchField = $('#search').val();
-        console.log(searchField.length)
         var output = "";
         var source = $('#link').children().text().trim()
         if (searchField.length >= 2) {
           var regex = new RegExp(searchField, "i");
-
           $('#result').show()
-
-          output = '<ul class="mdc-list mdc-list--two-line">'
+          output = '<ul class="mdc-list mdc-list--two-line" id="result-list-items"></ul>'
+          $('#result-list').html(output)
           $.getJSON(`/api/${source}/devices`, function (data) {
             var list = ""
             $.each(data.devices, function (key, val) {
@@ -40,8 +36,7 @@
               `
               }
             });
-            output += list
-            $('#result-list').html(output)
+            $('#result-list-items').append(list)
           })
           $.getJSON(`/api/${source}/indicators`, function (data) {
             var list = ""
@@ -58,13 +53,10 @@
               `
               }
             });
-            output += list
-            output += '</ul>'
-            $('#result-list').html(output)
+            $('#result-list-items').append(list)
           });
         }
-        else {
-          console.log("Search field smaller")
+        else {          
           $('#result-list').html('')
           $('#result').hide()
         }
@@ -73,8 +65,6 @@
     function toggle(disableObj, e) {
       disableObj = JSON.parse(unescape(disableObj))
       $(`#${e}`).toggleClass('mdc-switch--checked')
-
-      //$(e).toggleClass('mdc-switch--checked')
       if ($(`#${e}`).hasClass('mdc-switch--checked')) {
         $.ajax({
           dataType: 'json',
@@ -104,37 +94,35 @@
       $('#result').hide();
       var output = `<div class="mdc-text-field-helper-text mdc-text-field-helper-text--persistent" aria-hidden="true">${link}
               </div>`
-      $('#link').html(output)
-      //$('#main-content').show()
+      $('#link').html(output)      
       $('#link-content').show()
     }
-    function createSevOneCard(){
-      $.getJSON()
-    }
-
-    function createSplunkCard(){
-
+    function createCard(type) {
+      card = `<div class="mdc-layout-grid mdc-typography--headline6" style="background-color:#5f259f;color:white;">
+                  ${type}
+                </div>`
+      $(`#${type.toLowerCase()}-card`).html(card)
+      $.getJSON(`/api/${type.toLowerCase()}/devices`, function (data) {
+        output = `
+        <div class="mdc-layout-grid" style="display:flex;justify-content:space-between">
+                  <p class="mdc-typography--button">Total Devices:</span>
+                    <p class="mdc-typography--button">${data.devices.length}</p>
+                </div>`
+        $(`#${type.toLowerCase()}-card`).append(output)
+      })
+      $.getJSON(`/api/${type.toLowerCase()}/indicators`, function (data) {
+        output = `<div class="mdc-layout-grid" style="display:flex;justify-content:space-between">
+                  <p class="mdc-typography--button">Total Indicators</p>
+                  <p class="mdc-typography--button">${data.indicators.length}</p>
+                </div>`
+        $(`#${type.toLowerCase()}-card`).append(output)
+      })
     }
     function toggleall(data, item, type1, type2, arrayList) {
-      console.log(typeof (data))
-      console.log(unescape(data))
-      console.log(JSON.parse(unescape(data)))
       data = JSON.parse(unescape(data))
       $('.toggle-all').toggleClass('mdc-switch--checked');
       if ($('.toggle-all').hasClass('mdc-switch--checked')) {
         $('.switch-items').addClass('mdc-switch--checked');
-        /*
-        $.each(data[item][arrayList], function (key, value) {
-          $.ajax({
-            dataType: 'json',
-            url: `/api/splunk/${type1}/${item}/${type2}/${value}`,
-            type: 'POST',
-            success: function (result) {
-              console.log(result)
-            }
-          });
-        });
-        */
         $.post(`/api/splunk/${type1}/${item}`, function (result) {
           console.log(result)
         });
@@ -149,17 +137,6 @@
             console.log(result)
           }
         });
-        /*
-                $.each(data[item][arrayList], function (key, value) {
-                  $.ajax({
-                    dataType: 'json',
-                    url: `/api/splunk/${type1}/${item}/${type2}/${value}`,
-                    type: 'DELETE',
-                    success: function (result) {
-                      console.log(result)
-                    }
-                  });
-                });*/
       }
     }
     function itemClicked(item, type1, source) {
@@ -167,14 +144,17 @@
         var arrayList;
         var disableObj = new Object();
         var type2;
+        var key;
         disableObj[type1] = item
         if (type1 == 'device') {
           arrayList = "indicators"
           type2 = "indicator"
+          key="deviceName"
         }
         if (type1 == 'indicator') {
           arrayList = "devices"
           type2 = "device"
+          key="indicatorName"
         }
         var output = ""
         var switchclass = ['mdc-switch'];
@@ -198,16 +178,15 @@
                   
                     </li>
                     <h3 class="mdc-list-group__subheader mdc-typography--headline6">${arrayList}</h3>`
-        $.each(data[item][arrayList], function (key, value) {
+        $.each(data[arrayList], function (index, value) {
           if (source == 'sevone') {
             var switchclass = ["mdc-switch"]
             $.getJSON(`/api/splunk/${type1}/${item}`, function (result) {
               if ($.isEmptyObject(result)) {
-                console.log(value + " Not enabled in Splunk")
                 switchclass[0] = "mdc-switch"
               }
               else {
-                list = result[item][arrayList]
+                list = result[arrayList]
                 if (list.includes(value)) {
                   switchclass[0] = "mdc-switch mdc-switch--checked"
                 }
@@ -250,19 +229,20 @@
             $("#result-list").html(output)
           }
         })
-        //output += '</ul>'
 
       });
     }
+
     function home() {
       $('#link-content').hide()
+      createCard("SevOne");
+      createCard("Splunk");
       $('#home-page').show()
-      $('#home-page').text("GGI Ops Splunk Feed management")
     }
   </script>
 </head>
 
-<body class="mdc-typography">
+<body class="mdc-typography" style="background-color: #e8e8e8">
   <div>
     <header class="mdc-top-app-bar mdc-top-app-bar--fixed mdc-elevation--z4"
       style="top:0px;left:0px;background-color: #5f259f">
@@ -284,9 +264,9 @@
       </div>
     </header>
 
-    <main class="mdc-top-app-bar--fixed-adjust" style="background-color: #e8e8e8;height: 100vw;">
-      <div class="mdc-layout-grid" id="main-content" style="width: 50vw;height:auto;margin-top:10rem;">
-        <div id="link-content" style="display: none;">
+    <main class="mdc-top-app-bar--fixed-adjust">
+      <div class="mdc-layout-grid" id="main-content" style="width: 70vw;height:auto;margin-top:10rem;">
+        <div id="link-content" style="display: none; width:50vw;margin: auto">
           <div
             class="mdc-text-field mdc-text-field--no-label mdc-text-field--fullwidth mdc-text-field--with-trailing-icon">
             <i class="material-icons mdc-text-field__icon">search</i>
@@ -301,16 +281,29 @@
           </div>
         </div>
         <div id="home-page">
-          <script>
-            home();
-            </script>
+          <div class="mdc-layout-grid">
+            <div class="mdc-layout-grid__inner">
+              <div id="sevone-card" class="mdc-layout-grid__cell--span-6 mdc-elevation--z5"
+                style="background-color:white;cursor:pointer;" href="#" onclick="linkLoad('sevone')">
+                <script>
+                  createCard("SevOne");
+                </script>
+
+              </div>
+              <div id="splunk-card" class="mdc-layout-grid__cell--span-6 mdc-elevation--z5"
+                style="background-color:white; cursor:pointer;" href="#" onclick="linkLoad('splunk')">
+                <script>
+                  createCard("Splunk");
+                </script>
+
+              </div>
+
+            </div>
+          </div>
         </div>
       </div>
     </main>
   </div>
-  <script type="text/javascript">
-    window.mdc.autoInit();
-  </script>
 </body>
 
 </html>

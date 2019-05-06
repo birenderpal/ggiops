@@ -34,7 +34,7 @@ class SplunkApp():
                 dev_list.append(device)
                 indicator_list.append(inventory['indicatorName'])
         if dev_list:
-            device_details={device:{"indicators":indicator_list}}
+            device_details={"deviceName":device,"indicators":indicator_list}
         else:
             device_details={}            
         return device_details                            
@@ -47,7 +47,7 @@ class SplunkApp():
                 ind_list.append(indicator)
                 device_list.append(inventory['deviceName'])
         if ind_list:
-            indicator_details={indicator:{"devices":device_list}}
+            indicator_details={"indicatorName":indicator,"devices":device_list}
         else:
             indicator_details={}
         return indicator_details       
@@ -133,7 +133,7 @@ class SplunkApp():
                 dev_list.append(device)
                 indicator_list.append(message['indicatorName'])
         if dev_list:            
-            device_details={device:{"indicators":indicator_list}}
+            device_details={"deviceName":device,"indicators":indicator_list}
         else:
             device_details={}            
         return device_details
@@ -146,7 +146,7 @@ class SplunkApp():
                 indicator_list.append(indicator)
                 device_list.append(message['deviceName'])
         if indicator_list:
-            indicator_details={indicator:{"devices":device_list}}
+            indicator_details={"indicatorName":indicator,"devices":device_list}
         else:
             indicator_details={}
         return indicator_details
