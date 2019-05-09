@@ -1,6 +1,6 @@
 env/
 .vscode/
-*.pyc
+*.py[co]
 __pycache__/
 lib/
 models/
