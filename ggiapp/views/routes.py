@@ -1,9 +1,8 @@
 from ggiapp import app
 from flask import jsonify, request,json, render_template,redirect
-from ggiapp.controllers.SplunkApp import SplunkApp
 #===============================================================================
 # logging.config.fileConfig('logging.conf')
-# LOGGER = logging.getLogger('splunk_query')
+# LOGGER = logging.getLogger('splunk_query')s
 #===============================================================================
 
 

@@ -9,10 +9,14 @@ from ggiapp import app
 
 class GGIStream():
     def __init__(self,rpcendpoint=None):
+
         self.rpcendpoint=app.config.get('KAFKA_API_ENDPOINT')
+        
         if rpcendpoint is not None:
             self.rpcendpoint = rpcendpoint                
+        
         self.INCOMING = "http://"+self.rpcendpoint+"/incoming"
+        
         self.OUTGOING = "http://"+self.rpcendpoint+"/outgoing"        
     
     def get_devices(self,**karg):
@@ -21,101 +25,166 @@ class GGIStream():
             source=incoming/outgoing to only get devices for single source
         """
         rpc_client=KafkaClient()
+
+        incoming_device_list = rpc_client.get_list(url=self.INCOMING,message_type="incoming",message_key="deviceName")
+
+        outgoing_device_list = rpc_client.get_list(url=self.OUTGOING,message_type="outgoing",message_key="deviceName")
+
         if 'device' not in karg:
-            if 'source' in karg:                                
+
+            if 'source' in karg:
                 message_type=karg['source']
-                url = self.OUTGOING if message_type == "outgoing" else self.INCOMING                                    
-                source_devices=rpc_client.get_list(url=url,message_type=message_type,message_key="deviceName")
-                devices={'count':len(source_devices),'devices':[]}
-                other_devices = rpc_client.get_list(url=self.OUTGOING,message_type="outgoing",message_key="deviceName") if message_type == "incoming" else None                                                                                               
-                for s_device in source_devices:
-                    device_indicators=rpc_client.get_grouped_list(url=url,message_type=message_type,message_key="indicatorName",group_by=s_device)
-                    device_detail={}
-                    indicators=[] 
-                    if other_devices is None:                                                                                           
-                        device_detail[s_device]={'count':device_indicators[s_device]['count'],'indicators':device_indicators[s_device]['list']}
-                    else:
-                        device_detail[s_device]={'outgoing':True,'count':device_indicators[s_device]['count']} if s_device in other_devices else {'outgoing':False,'count':device_indicators[s_device]['count']}
-                        other_indicators=rpc_client.get_grouped_list(url=self.OUTGOING,message_type="outgoing",message_key="indicatorName",group_by=s_device)
-                        for indicator in device_indicators[s_device]['list']: 
-                            if not other_indicators:
+                url = self.OUTGOING if message_type == "outgoing" else self.INCOMING                                                    
+                devices = {'count':len(outgoing_device_list),'devices':[]} if message_type == "outgoing" else {'count':len(incoming_device_list),'devices':[]} 
+                
+                if message_type == "outgoing":
+
+                    for device in outgoing_device_list:
+                        device_indicators=rpc_client.get_grouped_list(url=url,message_type=message_type,message_key="indicatorName",group_by=device)
+                        device_details={}                    
+                        device_details[device]={'count':device_indicators[device]['count'],'indicators':device_indicators[device]['list']}
+                        devices['devices'].append(device_details)
+
+                    return devices
+
+                else:
+
+                    for device in incoming_device_list:
+                        device_indicators=rpc_client.get_grouped_list(url=url,message_type=message_type,message_key="indicatorName",group_by=device)
+                        device_details={}                    
+                        indicators=[] 
+                        
+                        if device in outgoing_device_list:                                                                                           
+                            device_details[device]={'outgoing':True,'count':device_indicators[device]['count']} 
+                            other_indicators=rpc_client.get_grouped_list(url=self.OUTGOING,message_type="outgoing",message_key="indicatorName",group_by=device)
+                            
+                            for indicator in device_indicators[device]['list']: 
+                                
+                                if not other_indicators:
+                                    indicators.append({'indicatorName':indicator,'outgoing':False})
+
+                                else:                                  
+                                    indicators.append({'indicatorName':indicator,'outgoing':True}) \
+                                        if indicator in other_indicators[device]['list'] \
+                                            else indicators.append({'indicatorName':indicator,'outgoing':False})
+                            device_details[device]['indicators']=indicators                            
+
+                        else:
+                            device_details[device]={'outgoing':False,'count':device_indicators[device]['count']}
+                            
+                            for indicator in device_indicators[device]['list']: 
                                 indicators.append({'indicatorName':indicator,'outgoing':False})
-                            else:                                  
-                                indicators.append({'indicatorName':indicator,'outgoing':True}) if indicator in other_indicators[s_device]['list'] else indicators.append({'indicatorName':indicator,'outgoing':False})
-                        device_detail[s_device]['indicators']=indicators
-                                                
-                    devices['devices'].append(device_detail)
-                return devices
+                            device_details[device]['indicators']=indicators                            
+                        
+                        devices['devices'].append(device_details)
+                    
+                    return devices
             else:
-                incoming_devices=rpc_client.get_list(url=self.INCOMING,message_type="incoming",message_key="deviceName")
-                outgoing_devices=rpc_client.get_list(url=self.OUTGOING,message_type="outgoing",message_key="deviceName")
+
                 devices={'devices':
                                     {'incoming':
-                                                {'count':len(incoming_devices),
+                                                {'count':len(incoming_device_list),
                                                 'devices':[]
                                                 },
                                     'outgoing':
-                                                {'count':len(outgoing_devices),
+                                                {'count':len(outgoing_device_list),
                                                 'devices':[]
                                                 }
                                     }
                         }                    
-                for in_device in incoming_devices:
+                for in_device in incoming_device_list:
                     device_indicators=rpc_client.get_grouped_list(url=self.INCOMING,message_type="incoming",message_key="indicatorName",group_by=in_device)
-                    outgoing_indicators=rpc_client.get_list(url=self.OUTGOING,message_type="outgoing",message_key="indicatorName")
                     in_device_detail={}
                     indicators=[]
-                    if in_device in outgoing_devices:
+
+                    if in_device in outgoing_device_list:
                         in_device_detail[in_device]={'outgoing':True,'count':device_indicators[in_device]['count']}
+                        outgoing_indicators=rpc_client.get_grouped_list(url=self.OUTGOING,message_type="outgoing",message_key="indicatorName",group_by=in_device)
+
+                        for indicator in device_indicators[in_device]['list']:                                
+                            indicators.append({'indicatorName':indicator,'outgoing':True}) \
+                                if indicator in outgoing_indicators[in_device]['list'] \
+                                    else \
+                                        indicators.append({'indicatorName':indicator,'outgoing':False})                    
+                            in_device_detail[in_device]['indicators']=indicators
+                    
                     else:
                         in_device_detail[in_device]={'outgoing':False,'count':device_indicators[in_device]['count']}                                            
-                    for indicator in device_indicators[in_device]['list']:                                
-                        indicators.append({'indicatorName':indicator,'outgoing':True}) if indicator in outgoing_indicators else indicators.append({'indicatorName':indicator,'outgoing':False})                    
-                        in_device_detail[in_device]['indicators']=indicators
+                    
                     devices['devices']['incoming']['devices'].append(in_device_detail)
                 
-                for out_device in outgoing_devices:
+                for out_device in outgoing_device_list:
                     device_indicators=rpc_client.get_grouped_list(url=self.OUTGOING,message_type="outgoing",message_key="indicatorName",group_by=out_device)
-                    devices['devices']['outgoing']['devices'].append({out_device:{'indicators':device_indicators[out_device]['list'],'count':device_indicators[out_device]['count']}})
+                    devices['devices']['outgoing']['devices'].append(\
+                        {out_device:{'indicators':device_indicators[out_device]['list'],\
+                        'count':device_indicators[out_device]['count']}})
+
                 return devices
         else:
+            all_devices=set()
+            all_devices.update(incoming_device_list)
+            all_devices.update(outgoing_device_list)
+            if karg['device'] not in all_devices:
+                return {}
+
             if 'source' in karg:
-                url = self.INCOMING if karg['source']=="incoming" else self.OUTGOING
+                message_type=karg['source']
+                url = self.OUTGOING if message_type == "outgoing" else self.INCOMING                                                    
                 device=karg['device']
+                device_indicators=rpc_client.get_grouped_list(url=url,message_type=message_type,message_key="indicatorName",group_by=device)
                 device_detail={}
-                indicators=[]
-                device_indicators=rpc_client.get_grouped_list(url=url,message_type=karg['source'],group_by=device,message_key="indicatorName")  
-                outgoing_indicators=rpc_client.get_grouped_list(url=self.OUTGOING,message_type="outgoing",message_key="indicatorName",group_by=device) if karg['source']=="incoming" else None
-                if outgoing_indicators is None:
-                    device_detail[device]={'count':device_indicators[device]['count'],'indicators':device_indicators[device]['list']} 
-                else:                        
-                    if device in rpc_client.get_list(url=self.OUTGOING,message_type="outgoing",message_key="deviceName"):
+
+                if message_type == "outgoing":
+                    device_details[device]={'count':device_indicators[device]['count'],'indicators':device_indicators[device]['list']}
+
+                else:
+                    outgoing_indicators=rpc_client.get_grouped_list(url=self.OUTGOING,message_type="outgoing",message_key="indicatorName",group_by=device)
+                    indicators=[]
+                    if device in outgoing_device_list:
                         device_detail[device]={'outgoing':True,'count':device_indicators[device]['count']}
+
+                        for indicator in device_indicators[device]['list']:    
+
+                            if indicator in outgoing_indicators[device]['list']:
+                                indicators.append({'indicatorName':indicator,'outgoing':True})
+
+                            else:
+                                indicators.append({'indicatorName':indicator,'outgoing':False})                
+                        device_detail[device]['indicators']=indicators            
                     else:
                         device_detail[device]={'outgoing':False,'count':device_indicators[device]['count']}                          
-                    for indicator in device_indicators[device]['list']:                                
-                        if indicator in outgoing_indicators[device]['list']:
-                            indicators.append({'indicatorName':indicator,'outgoing':True})
-                        else:
-                            indicators.append({'indicatorName':indicator,'outgoing':False})                
-                    device_detail[device]['indicators']=indicators            
+                        
+                        for indicator in device_indicators[device]['list']:    
+                            indicators.append({'indicatorName':indicator,'outgoing':False})  
+                        device_detail[device]['indicators']=indicators   
+
                 return device_detail                      
             else:
                 device=karg['device']
                 device_detail={}
                 indicators=[]
                 device_indicators=rpc_client.get_grouped_list(url=self.INCOMING,message_type="incoming",group_by=device,message_key="indicatorName")  
-                outgoing_indicators=rpc_client.get_list(url=self.OUTGOING,message_type="outgoing",message_key="indicatorName")
-                if device in rpc_client.get_list(url=self.OUTGOING,message_type="outgoing",message_key="deviceName"):
+                outgoing_indicators=rpc_client.get_grouped_list(url=self.OUTGOING,message_type="outgoing",group_by=device,message_key="indicatorName")  
+                
+                if device in outgoing_device_list:
                     device_detail[device]={'outgoing':True,'count':device_indicators[device]['count']}
+
+                    for indicator in device_indicators[device]['list']:                                
+
+                        if indicator in outgoing_indicators[device]['list']:
+                            indicators.append({'indicatorName':indicator,'outgoing':True})
+
+                        else:
+                            indicators.append({'indicatorName':indicator,'outgoing':False})                
+                
                 else:
                     device_detail[device]={'outgoing':False,'count':device_indicators[device]['count']}                          
-                for indicator in device_indicators[device]['list']:                                
-                    if indicator in outgoing_indicators:
+                
+                    for indicator in device_indicators[device]['list']:                                
                         indicators.append({'indicatorName':indicator,'outgoing':True})
-                    else:
-                        indicators.append({'indicatorName':indicator,'outgoing':False})                
+                
                 device_detail[device]['indicators']=indicators            
+                
                 return device_detail                      
         
 

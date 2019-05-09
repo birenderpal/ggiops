@@ -83,31 +83,20 @@
         }
       });
     });
-    function toggle(disableObj, e) {
-      disableObj = JSON.parse(unescape(disableObj))
+    function toggle(item, e) {
+      disableObj = JSON.parse(unescape(item))
+      var url=`/api/outgoing/device/${disableObj.deviceName}/indicator/${disableObj.indicatorName}`    
       $(`#${e}`).toggleClass('mdc-switch--checked')
-      if ($(`#${e}`).hasClass('mdc-switch--checked')) {
-        $.ajax({
+      var action = $(`#${e}`).hasClass('mdc-switch--checked') ? 'POST':'DELETE'
+      $.ajax({
           dataType: 'json',
-          url: `/api/outgoing/device/${disableObj.device}/indicator/${disableObj.indicator}`,
-          type: 'POST',
+          url: `${url}`,
+          type: `${action}`,
           success: function (data) {
             console.log(data)
           }
         });
-
-      }
-      else {
-        $.ajax({
-          dataType: 'json',
-          url: `/api/outgoing/device/${disableObj.device}/indicator/${disableObj.indicator}`,
-          type: 'DELETE',
-          success: function (data) {
-            console.log(data)
-          }
-        });
-
-      }
+    
     }
     function linkLoad(link) {
       $('#home-page').hide();
@@ -143,26 +132,32 @@
         $(`#${type.toLowerCase()}-card`).append(output)
       })
     }
-    function toggleall(data, item, type1, type2, arrayList) {
+    function toggleall(data) {
       data = JSON.parse(unescape(data))
+      var item 
+      for (let k in data){
+        item = k
+      }
+      var url = 'indicators' in data[item] ? `/api/outgoing/device/${item}`: `/api/outgoing/indicator/${item}`
+      var action
       $('.toggle-all').toggleClass('mdc-switch--checked');
       if ($('.toggle-all').hasClass('mdc-switch--checked')) {
         $('.switch-items').addClass('mdc-switch--checked');
-        $.post(`/api/outgoing/${type1}/${item}`, function (result) {
-          console.log(result)
-        });
+        action='POST'
       }
       else {
         $('.switch-items').removeClass('mdc-switch--checked');
-        $.ajax({
+        action='DELETE'
+      }
+      $.ajax({
           dataType: 'json',
-          url: `/api/outgoing/${type1}/${item}`,
-          type: 'DELETE',
+          url: `${url}`,
+          type: `${action}`,
           success: function (result) {
             console.log(result)
           }
         });
-      }
+
     }
     function itemClicked(item, name,source) {
       itemObj = JSON.parse(unescape(item))
@@ -214,7 +209,7 @@
           output += `
                 <li class="mdc-list-item" style="display:flex;justify-content:space-between;cursor:auto;">
                     <span class="mdc-list-item__text mdc-typography--subtitle2">${id}</span>
-                    <div class="switch-items ${switchclass}" id=${id} onclick="toggle('${listitem}'); return false">
+                    <div class="switch-items ${switchclass}" id=${id} onclick="toggle('${listitem}','${id}'); return false">
                           <div class="mdc-switch__track" ></div>
                           <div class="mdc-switch__thumb-underlay">
                             <div class="mdc-switch__thumb" >
@@ -231,8 +226,8 @@
 
     function home() {
       $('#link-content').hide()
-      createCard("SevOne");
-      createCard("Splunk");
+      createCard("Incoming");
+      createCard("Outgoing");
       $('#home-page').show()
     }
   </script>
