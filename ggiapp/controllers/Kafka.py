@@ -28,7 +28,8 @@ class KafkaClient():
     def get_kafka_messages(cls,**karg):
         """get messages from kafka rpc endpoint url=url"""          
         req = httplib2.Http()
-        #response,messages = (req.request(karg['url'],'GET')) 
+        response,messages = (req.request(karg['url'],'GET')) 
+        '''
         if karg['url']=="http://localhost:8000/outgoing":
             messages={"outgoing":[
                 {'deviceName':"AKBR1",'indicatorName':'indicator1',"toSplunk":True},
@@ -57,9 +58,10 @@ class KafkaClient():
                 {'deviceName':"SEBR1",'indicatorName':'indicator1',"toSplunk":True},
                 {'deviceName':"HEBR1",'indicatorName':'indicator1',"toSplunk":True}
             ]}
-
-        
         return (messages)
+        '''
+        
+        return (json.loads(messages))
     
     def get_list(self,**karg):
         """returns a list with values from kafka messages, 

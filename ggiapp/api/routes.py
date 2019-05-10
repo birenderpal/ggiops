@@ -166,7 +166,7 @@ class OutgoingIndicator(Resource):
     def post(self,indicator):        
         ggi_app = GGIStream()
         try:
-            ggi_app.enable_indicator(indicator)
+            ggi_app.update_filter(indicator=indicator,action="enable")
             return jsonify({"status":"success"})
         except Exception as ex:
             return jsonify({"status":str(ex)})  
@@ -184,7 +184,7 @@ class OutgoingIndicator(Resource):
     def delete(self,indicator):
         ggi_app=GGIStream()
         try:
-            ggi_app.disable_indicator(indicator=indicator)
+            ggi_app.update_filter(indicator=indicator,action="disable")
             return jsonify({"status":"success"})
         except Exception as ex:
             return jsonify({"status":str(ex)})   
@@ -205,7 +205,7 @@ class OutgoingIndicatorDevice(Resource):
     def post(self,indicator,device):
         ggi_app=GGIStream()
         try:
-            ggi_app.enable_indicator(indicator=indicator,device=device)
+            ggi_app.update_filter(indicator=indicator,device=device,action="enable")
             return jsonify({"status":"success"})
         except Exception as ex:
             return jsonify({"status":str(ex)})
@@ -223,7 +223,7 @@ class OutgoingIndicatorDevice(Resource):
     def delete(self,indicator,device):
         ggi_app=GGIStream()
         try:
-            ggi_app.disable_indicator(indicator=indicator,device=device)
+            ggi_app.update_filter(indicator=indicator,device=device,action="disable")
             return jsonify({"status":"success"})
         except Exception as ex:
             return jsonify({"status":str(ex)})                 
@@ -259,7 +259,7 @@ class OutgoingDevice(Resource):
     def post(self,device):
         ggi_app=GGIStream()        
         try:
-            ggi_app.enable_indicator(device=device)
+            ggi_app.update_filter(device=device,action="enable")
             return jsonify({"status":"success"})
         except Exception as ex:
             return jsonify({"status":str(ex)})
@@ -277,7 +277,7 @@ class OutgoingDevice(Resource):
     def delete(self,device):
         ggi_app=GGIStream()
         try:
-            ggi_app.disable_indicator(device=device)
+            ggi_app.update_filter(device=device,action="disable")
             return jsonify({"status":"success"})
         except Exception as ex:
             return jsonify({"status":str(ex)})
@@ -298,7 +298,7 @@ class OutgoingDeviceIndicator(Resource):
     def post(self,device,indicator):
         ggi_app=GGIStream()        
         try:
-            ggi_app.enable_indicator(device=device,indicator=indicator)
+            ggi_app.update_filter(device=device,indicator=indicator,action="enable")
             return jsonify({"status":"success"})
         except Exception as ex:
             return jsonify({"status":str(ex)})
@@ -316,7 +316,7 @@ class OutgoingDeviceIndicator(Resource):
     def delete(self,device,indicator):
         ggi_app=GGIStream()
         try:
-            ggi_app.disable_indicator(device=device,indicator=indicator)
+            ggi_app.update_filter(device=device,indicator=indicator,action="disable")
             return jsonify({"status":"success"})
         except Exception as ex:
             return jsonify({"status":str(ex)})

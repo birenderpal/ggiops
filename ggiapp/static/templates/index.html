@@ -16,50 +16,43 @@
         var searchField = $('#search').val();
         var output = "";
         var source = $('#link').children().text().trim()
+        $('#result-list').html('')
         if (searchField.length >= 2) {
-          $('#result-list').html("")
           var regex = new RegExp(searchField, "i");
           $('#result').show()
           output = '<ul class="mdc-list mdc-list--two-line" id="result-list-items"></ul>'
           $('#result-list').html(output)
-          $.getJSON(`/api/${source}/devices`, function (data) {     
-            //console.log("data for devices:",data)       
-            var list = ""
-            $.each(data.devices, function (key, val) {
-              var devices=[]
-              for (let device in val){
-                devices.push(device)
+          var list = ""
+          $.getJSON(`/api/${source}/devices`, function (data) {                               
+            data.devices.filter((val) => {
+              if (Object.keys(val)[0].search(regex) != -1) {
+                return true
               }
-              $.each(devices,function(key,device){
-                if ((device.search(regex) != -1)) {
-                   // console.log(val)
-                    valString=escape(JSON.stringify(val))
-                    //console.log(valString)
-                    list += `
-                    <li class="mdc-list-item" onclick="itemClicked('${valString}','${device}','${source}'); return false">
+            }).forEach((element) => {
+                console.log(element)
+                list += `
+                    <li class="mdc-list-item" onclick="itemClicked('${escape(JSON.stringify(element))}','${Object.keys(element)[0]}','${source}'); return false">
                         <span class="mdc-list-item__text">
-                        <span class="mdc-list-item__primary-text">${device}</span>
+                        <span class="mdc-list-item__primary-text">${Object.keys(element)[0]}</span>
                         <span class="mdc-list-item__secondary-text">Device</span>
                         </span>
                     </li>
                     <li role="separator" class="mdc-list-divider"></li>
-                    `
-                  }
-                  //$('#result-list-items').append(list)
-                })
-            });
+                    `              
+            })
             $('#result-list-items').append(list)
-          })
+          });
+/*
           $.getJSON(`/api/${source}/indicators`, function (data) {
             var list = ""
             $.each(data.indicators, function (key, val) {
-              var indicators=[]
-              for (let indicator in val){
+              var indicators = []
+              for (let indicator in val) {
                 indicators.push(indicator)
               }
-              $.each(indicators,function(key,indicator){
+              $.each(indicators, function (key, indicator) {
                 if ((indicator.search(regex) != -1)) {
-                  valString=escape(JSON.stringify(val))
+                  valString = escape(JSON.stringify(val))
                   list += `
                     <li class="mdc-list-item" onclick="itemClicked('${valString}','${indicator}','${source}'); return false">
                       <span class="mdc-list-item__text">
@@ -76,8 +69,9 @@
             });
             $('#result-list-items').append(list)
           });
+          */
         }
-        else {          
+        else {
           $('#result-list').html('')
           $('#result').hide()
         }
@@ -85,18 +79,18 @@
     });
     function toggle(item, e) {
       disableObj = JSON.parse(unescape(item))
-      var url=`/api/outgoing/device/${disableObj.deviceName}/indicator/${disableObj.indicatorName}`    
+      var url = `/api/outgoing/device/${disableObj.deviceName}/indicator/${disableObj.indicatorName}`
       $(`#${e}`).toggleClass('mdc-switch--checked')
-      var action = $(`#${e}`).hasClass('mdc-switch--checked') ? 'POST':'DELETE'
+      var action = $(`#${e}`).hasClass('mdc-switch--checked') ? 'POST' : 'DELETE'
       $.ajax({
-          dataType: 'json',
-          url: `${url}`,
-          type: `${action}`,
-          success: function (data) {
-            console.log(data)
-          }
-        });
-    
+        dataType: 'json',
+        url: `${url}`,
+        type: `${action}`,
+        success: function (data) {
+          console.log(data)
+        }
+      });
+
     }
     function linkLoad(link) {
       $('#home-page').hide();
@@ -104,7 +98,7 @@
       $('#result').hide();
       var output = `<div class="mdc-text-field-helper-text mdc-text-field-helper-text--persistent" aria-hidden="true">${link}
               </div>`
-      $('#link').html(output)      
+      $('#link').html(output)
       $('#link-content').show()
     }
     function createCard(type) {
@@ -112,9 +106,8 @@
                   ${type}
                 </div>`
       $(`#${type.toLowerCase()}-card`).html(card)
-      $.getJSON(`/api/${type.toLowerCase()}/devices`, function (data) {
-        console.log(data)
-        devtype=type.toLowerCase()
+      $.getJSON(`/api/${type.toLowerCase()}/devices`, function (data) {        
+        devtype = type.toLowerCase()
         output = `
         <div class="mdc-layout-grid" style="display:flex;justify-content:space-between">
                   <p class="mdc-typography--button">Total Devices:</span>
@@ -122,9 +115,8 @@
                 </div>`
         $(`#${type.toLowerCase()}-card`).append(output)
       })
-      $.getJSON(`/api/${type.toLowerCase()}/indicators`, function (data) {
-        console.log(data)
-        indtype=type.toLowerCase()
+      $.getJSON(`/api/${type.toLowerCase()}/indicators`, function (data) {        
+        indtype = type.toLowerCase()
         output = `<div class="mdc-layout-grid" style="display:flex;justify-content:space-between">
                   <p class="mdc-typography--button">Total Indicators</p>
                   <p class="mdc-typography--button">${data.count}</p>
@@ -134,38 +126,39 @@
     }
     function toggleall(data) {
       data = JSON.parse(unescape(data))
-      var item 
-      for (let k in data){
+      var item
+      for (let k in data) {
         item = k
       }
-      var url = 'indicators' in data[item] ? `/api/outgoing/device/${item}`: `/api/outgoing/indicator/${item}`
+      var url = 'indicators' in data[item] ? `/api/outgoing/device/${item}` : `/api/outgoing/indicator/${item}`
       var action
       $('.toggle-all').toggleClass('mdc-switch--checked');
       if ($('.toggle-all').hasClass('mdc-switch--checked')) {
         $('.switch-items').addClass('mdc-switch--checked');
-        action='POST'
+        action = 'POST'
       }
       else {
         $('.switch-items').removeClass('mdc-switch--checked');
-        action='DELETE'
+        action = 'DELETE'
       }
       $.ajax({
-          dataType: 'json',
-          url: `${url}`,
-          type: `${action}`,
-          success: function (result) {
-            console.log(result)
-          }
-        });
+        dataType: 'json',
+        url: `${url}`,
+        type: `${action}`,
+        success: function (result) {
+          console.log(result)
+        }
+      });
 
     }
-    function itemClicked(item, name,source) {
+    function itemClicked(item, name, source) {
       itemObj = JSON.parse(unescape(item))
       //console.log(itemObj, source)
-      var val=itemObj[name]
+      var val = itemObj[name]
       //console.log(itemObj)
-      var arrayList = 'indicators' in val ? "indicators":"devices"
-      var headswitchclass = val.outgoing ? ["mdc-switch mdc-switch--checked"]:['mdc-switch']
+      var arrayList = 'indicators' in val ? "indicators" : "devices"
+      var headswitchclass = val.outgoing ? ["mdc-switch mdc-switch--checked"] : ['mdc-switch']
+      headswitchclass[0] = (source == 'outgoing') ? ["mdc-switch mdc-switch--checked"] : headswitchclass[0]
       //console.log(listitem)
       var output = ""
       //var switchclass = (source == 'incoming') ? ['mdc-switch']:["mdc-switch mdc-switch--checked"]
@@ -186,27 +179,24 @@
               </li>
               <h3 class="mdc-list-group__subheader mdc-typography--headline6">${arrayList}</h3>
               `
-        $("#result-list").html(output)
-        console.log(val[arrayList])
-        $.each(val[arrayList], function (index, value) {
-          var listitem ={}
-          listitem = 'indicators' in val ? {"deviceName":name}:{'indicatorName':name}
-          console.log("Times executed")
-          var switchclass=[]
-          switchclass[0] = ["mdc-switch mdc-switch--checked"]
-          var id=""
-          if (value.__proto__.constructor.name=="Object"){
-            switchclass[0] = value.outgoing ? ["mdc-switch mdc-switch--checked"]:["mdc-switch"] 
-            'deviceName' in listitem ? id=value.indicatorName:id=value.deviceName
-            'deviceName' in listitem ? listitem['indicatorName']=value.indicatorName:listitem['deviceName']=value.deviceName
-          }
-          else{
-             id = value
-            'deviceName' in listitem ? listitem['indicatorName']=value:listitem['deviceName']=value
-          }
-          console.log(listitem)
-          listitem = escape(JSON.stringify(listitem))
-          output += `
+      $("#result-list").html(output)      
+      $.each(val[arrayList], function (index, value) {
+        var listitem = {}
+        listitem = 'indicators' in val ? { "deviceName": name } : { 'indicatorName': name }        
+        var switchclass = []
+        switchclass[0] = ["mdc-switch mdc-switch--checked"]
+        var id = ""
+        if (value.__proto__.constructor.name == "Object") {
+          switchclass[0] = value.outgoing ? ["mdc-switch mdc-switch--checked"] : ["mdc-switch"]
+          'deviceName' in listitem ? id = value.indicatorName : id = value.deviceName
+          'deviceName' in listitem ? listitem['indicatorName'] = value.indicatorName : listitem['deviceName'] = value.deviceName
+        }
+        else {
+          id = value
+          'deviceName' in listitem ? listitem['indicatorName'] = value : listitem['deviceName'] = value
+        }        
+        listitem = escape(JSON.stringify(listitem))
+        output += `
                 <li class="mdc-list-item" style="display:flex;justify-content:space-between;cursor:auto;">
                     <span class="mdc-list-item__text mdc-typography--subtitle2">${id}</span>
                     <div class="switch-items ${switchclass}" id=${id} onclick="toggle('${listitem}','${id}'); return false">
@@ -219,10 +209,10 @@
                         </div> 
                     </li>
                     <li role="separator" class="mdc-list-divider"></li>`
-            $("#result-list").html(output)
-        })
-        //$("#result-list").html(output)
-      }
+        $("#result-list").html(output)
+      })
+      //$("#result-list").html(output)
+    }
 
     function home() {
       $('#link-content').hide()
@@ -243,11 +233,14 @@
             home
           </button>
 
-          <button class="mdc-button  mdc-button--dense" style="color:white" onclick="linkLoad('outgoing')">outgoing</button>
-          <button class="mdc-button  mdc-button--dense" style="color:white" onclick="linkLoad('incoming')">incoming</button>
+          <button class="mdc-button  mdc-button--dense" style="color:white"
+            onclick="linkLoad('outgoing')">outgoing</button>
+          <button class="mdc-button  mdc-button--dense" style="color:white"
+            onclick="linkLoad('incoming')">incoming</button>
         </section>
         <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end">
-          <button class="mdc-button material-icons mdc-top-app-bar__navigation-icon" style="display: flex;flex-direction: column;">
+          <button class="mdc-button material-icons mdc-top-app-bar__navigation-icon"
+            style="display: flex;flex-direction: column;">
             person
             <span class="mdc-button__label mdc-typography--caption">Login</span>
           </button>
