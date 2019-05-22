@@ -1,0 +1,30 @@
+@import "@material/textfield/helper-text/mdc-text-field-helper-text";
+@import "@material/textfield/mdc-text-field";
+@import "@material/list/mdc-list";
+@import "@material/switch/mdc-switch";
+@import "@material/layout-grid/mdc-layout-grid";
+@import "@material/snackbar/mdc-snackbar";
+#link-content{
+    width:50vw;
+    margin: auto;
+    margin-top: 5rem;
+}
+#main-content{
+    width: 70vw;
+    height: auto;
+    margin: auto;
+}
+.searchresultlist{
+    cursor: pointer;
+}
+#result{
+    margin-top:1.5rem;
+}
+.manage-items{
+    margin-top: 3rem;
+    background-color: white;
+}
+.manage-items>.mdc-layout-grid__inner:nth-child(n+1){
+    border-bottom:solid 1px #d2d1da;
+    margin-top: 20px;
+}

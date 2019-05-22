@@ -1,0 +1,16 @@
+@import "@material/top-app-bar/mdc-top-app-bar";
+@import "@material/icon-button/mdc-icon-button";
+@import "@material/button/mdc-button";
+
+.mdc-top-app-bar{
+    background-color: #5f259f;
+}
+
+.link-button.mdc-button{
+    color:white;
+}
+.login-button.mdc-button{
+    display: flex;
+    flex-direction: column;
+    color:white;
+}

@@ -11,14 +11,14 @@ class KafkaPublisher():
         try:
             self._producer = KafkaProducer(bootstrap_servers=self.bootstrap_servers,key_serializer=str.encode,value_serializer=lambda v: json.dumps(v).encode('utf-8'))
         except Exception as ex:
-            print(str(ex))
+            raise Exception(ex)            
         #print(self._producer)
     def publish_message(self,topic, key, message):        
         try:
             self._producer.send(topic,key=key,value=message)            
             self._producer.flush()            
         except Exception as ex:            
-            print(str(ex))
+            raise Exception(ex)
 class KafkaClient():
     
     def __init__(self):
@@ -28,41 +28,42 @@ class KafkaClient():
     def get_kafka_messages(cls,**karg):
         """get messages from kafka rpc endpoint url=url"""          
         req = httplib2.Http()
+        
         response,messages = (req.request(karg['url'],'GET')) 
         '''
         if karg['url']=="http://localhost:8000/outgoing":
             messages={"outgoing":[
-                {'deviceName':"AKBR1",'indicatorName':'indicator1',"toSplunk":True},
-                {'deviceName':"AKBR1",'indicatorName':'indicator2',"toSplunk":True},
-                {'deviceName':"AKBR1",'indicatorName':'indicator3',"toSplunk":True},
-                {'deviceName':"AKBR1",'indicatorName':'indicator4',"toSplunk":True},
-                {'deviceName':"AKBR2",'indicatorName':'indicator1',"toSplunk":True},
-                {'deviceName':"AKBR3",'indicatorName':'indicator1',"toSplunk":True},
-                {'deviceName':"AKBR4",'indicatorName':'indicator1',"toSplunk":True},
-                {'deviceName':"AKBR5",'indicatorName':'indicator1',"toSplunk":True},
-                {'deviceName':"TKBR1",'indicatorName':'indicator1',"toSplunk":True},
-                {'deviceName':"SEBR1",'indicatorName':'indicator1',"toSplunk":True},
-                {'deviceName':"HEBR1",'indicatorName':'indicator1',"toSplunk":True}
+                {'deviceName':"AKBR1",'indicatorName':'indicator1',"enable":True},
+                {'deviceName':"AKBR1",'indicatorName':'indicator2',"enable":True},
+                {'deviceName':"AKBR1",'indicatorName':'indicator3',"enable":True},
+                {'deviceName':"AKBR1",'indicatorName':'indicator4',"enable":True},
+                {'deviceName':"AKBR2",'indicatorName':'indicator1',"enable":True},
+                {'deviceName':"AKBR3",'indicatorName':'indicator1',"enable":True},
+                {'deviceName':"AKBR4",'indicatorName':'indicator1',"enable":True},
+                {'deviceName':"AKBR5",'indicatorName':'indicator1',"enable":True},
+                {'deviceName':"TKBR1",'indicatorName':'indicator1',"enable":True},
+                {'deviceName':"SEBR1",'indicatorName':'indicator1',"enable":True},
+                {'deviceName':"HEBR1",'indicatorName':'indicator1',"enable":True}
             ]}
         else:
             messages={"incoming":[
                 {'deviceName':"BKBR1",'indicatorName':'indicator1'},
                 {'deviceName':"CKBR1",'indicatorName':'indicator2'},
-                {'deviceName':"AKBR1",'indicatorName':'indicator3',"toSplunk":True},
-                {'deviceName':"DKBR1",'indicatorName':'indicator4',"toSplunk":True},
-                {'deviceName':"AKBR2",'indicatorName':'indicator1',"toSplunk":True},
-                {'deviceName':"AKBR3",'indicatorName':'indicator1',"toSplunk":True},
-                {'deviceName':"AKBR4",'indicatorName':'indicator1',"toSplunk":True},
-                {'deviceName':"AKBR5",'indicatorName':'indicator1',"toSplunk":True},
-                {'deviceName':"TKBR1",'indicatorName':'indicator1',"toSplunk":True},
-                {'deviceName':"SEBR1",'indicatorName':'indicator1',"toSplunk":True},
-                {'deviceName':"HEBR1",'indicatorName':'indicator1',"toSplunk":True}
+                {'deviceName':"AKBR1",'indicatorName':'indicator3',"enable":True},
+                {'deviceName':"DKBR1",'indicatorName':'indicator4',"enable":True},
+                {'deviceName':"AKBR2",'indicatorName':'indicator1',"enable":True},
+                {'deviceName':"AKBR3",'indicatorName':'indicator1',"enable":True},
+                {'deviceName':"AKBR4",'indicatorName':'indicator1',"enable":True},
+                {'deviceName':"AKBR5",'indicatorName':'indicator1',"enable":True},
+                {'deviceName':"TKBR1",'indicatorName':'indicator1',"enable":True},
+                {'deviceName':"SEBR1",'indicatorName':'indicator1',"enable":True},
+                {'deviceName':"HEBR1",'indicatorName':'indicator1',"enable":True}
             ]}
         return (messages)
         '''
         
         return (json.loads(messages))
-    
+        
     def get_list(self,**karg):
         """returns a list with values from kafka messages, 
             url defines kafka rpc endpoint
