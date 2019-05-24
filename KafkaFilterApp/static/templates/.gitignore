@@ -5,4 +5,3 @@ env/
 __pycache__/
 lib/
 models/
-KStreamRest.py

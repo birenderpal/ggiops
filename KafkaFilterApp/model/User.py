@@ -1,4 +1,4 @@
-from ggiapp import db, bcrypt
+from KafkaFilterApp import db, bcrypt
 import jwt
 from flask_login import UserMixin
 

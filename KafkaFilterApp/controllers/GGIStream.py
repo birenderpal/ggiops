@@ -4,8 +4,8 @@ import urllib
 import sys
 import codecs
 from flask import Flask, jsonify, request
-from ggiapp.controllers.Kafka import KafkaPublisher, KafkaClient
-from ggiapp import app
+from KafkaFilterApp.controllers.Kafka import KafkaPublisher, KafkaClient
+from KafkaFilterApp import app
 
 
 class GGIStream():

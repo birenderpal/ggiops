@@ -3,18 +3,15 @@ Created on 23/04/2018
 
 @author: Birender Pal
 '''
-from ggiapp import app
+from KafkaFilterApp import app
 import datetime
 import json
 import httplib2
 import urllib
 from flask import Flask, jsonify, request
 from flask_restplus import Resource,Api
-from ggiapp.controllers.GGIStream import GGIStream
-#HOSTNAME="localhost:8000"
-#api = Api(app)
+from KafkaFilterApp.controllers.GGIStream import GGIStream
 api = Api(app=app,doc="/api/docs",version=1.0,title="Filter Stream app")
-#api = swagger.docs(Api(app),apiVersion='1',api_spec_url="/api/v1/docs",description="GGI app",basePath="/api")
 
 
 class Source(Resource):

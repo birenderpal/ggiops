@@ -1,4 +1,4 @@
-from ggiapp import app,login_manager
+from KafkaFilterApp import app,login_manager
 from flask_login import login_required
 from flask import jsonify, request,json, render_template,redirect
 #===============================================================================

@@ -2,7 +2,7 @@ import json
 import httplib2
 from time import sleep
 from kafka import KafkaConsumer, KafkaProducer
-from ggiapp import app
+from KafkaFilterApp import app
 class KafkaPublisher():
     def __init__(self,bootstrap_servers=None):     
         self.bootstrap_servers=app.config.get('BOOTSTRAP_SERVERS')
@@ -30,38 +30,6 @@ class KafkaClient():
         req = httplib2.Http()
         
         response,messages = (req.request(karg['url'],'GET')) 
-        '''
-        if karg['url']=="http://localhost:8000/outgoing":
-            messages={"outgoing":[
-                {'deviceName':"AKBR1",'indicatorName':'indicator1',"enable":True},
-                {'deviceName':"AKBR1",'indicatorName':'indicator2',"enable":True},
-                {'deviceName':"AKBR1",'indicatorName':'indicator3',"enable":True},
-                {'deviceName':"AKBR1",'indicatorName':'indicator4',"enable":True},
-                {'deviceName':"AKBR2",'indicatorName':'indicator1',"enable":True},
-                {'deviceName':"AKBR3",'indicatorName':'indicator1',"enable":True},
-                {'deviceName':"AKBR4",'indicatorName':'indicator1',"enable":True},
-                {'deviceName':"AKBR5",'indicatorName':'indicator1',"enable":True},
-                {'deviceName':"TKBR1",'indicatorName':'indicator1',"enable":True},
-                {'deviceName':"SEBR1",'indicatorName':'indicator1',"enable":True},
-                {'deviceName':"HEBR1",'indicatorName':'indicator1',"enable":True}
-            ]}
-        else:
-            messages={"incoming":[
-                {'deviceName':"BKBR1",'indicatorName':'indicator1'},
-                {'deviceName':"CKBR1",'indicatorName':'indicator2'},
-                {'deviceName':"AKBR1",'indicatorName':'indicator3',"enable":True},
-                {'deviceName':"DKBR1",'indicatorName':'indicator4',"enable":True},
-                {'deviceName':"AKBR2",'indicatorName':'indicator1',"enable":True},
-                {'deviceName':"AKBR3",'indicatorName':'indicator1',"enable":True},
-                {'deviceName':"AKBR4",'indicatorName':'indicator1',"enable":True},
-                {'deviceName':"AKBR5",'indicatorName':'indicator1',"enable":True},
-                {'deviceName':"TKBR1",'indicatorName':'indicator1',"enable":True},
-                {'deviceName':"SEBR1",'indicatorName':'indicator1',"enable":True},
-                {'deviceName':"HEBR1",'indicatorName':'indicator1',"enable":True}
-            ]}
-        return (messages)
-        '''
-        
         return (json.loads(messages))
         
     def get_list(self,**karg):
