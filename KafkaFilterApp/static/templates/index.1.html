@@ -73,13 +73,19 @@
                 <div class="mdc-form-field">
                   <div class="mdc-text-field mdc-text-field--fullwidth">
                     <input id="username" class="mdc-text-field__input" type="text" placeholder="username"
-                      aria-label="username">
+                      aria-label="username" required>
                   </div>
+                  <div id="email-feild" class="mdc-text-field mdc-text-field--fullwidth" style="display:none">
+                    <input id="username" class="mdc-text-field__input" type="text" placeholder="email"
+                      aria-label="email" required>
+                  </div>
+
                   <div class="mdc-text-field mdc-text-field--fullwidth">
                       <input id="password" class="mdc-text-field__input"
                              type="password"
                              placeholder="password"
-                             aria-label="password">
+                             aria-label="password"
+                             required>
                     </div>                  
                 </div>
               </section>
@@ -94,6 +100,44 @@
             </div>
           </div>
         </div>
+        <div id="register-dialog" class="mdc-dialog mdc-dialog--scrollable" role="alertdialog" aria-modal="true"
+          aria-labelledby="confirmation-dialog-label" aria-describedby="confirmation-dialog-description">
+          <div class="mdc-dialog__scrim"></div>
+          <div class="mdc-dialog__container">
+            <div class="mdc-dialog__surface">
+
+              <section class="mdc-dialog__content">
+                <div class="mdc-form-field">
+                  <div class="mdc-text-field mdc-text-field--fullwidth">
+                    <input id="username" class="mdc-text-field__input" type="text" placeholder="username"
+                      aria-label="username" required>
+                  </div>
+                  <div id="email-feild" class="mdc-text-field mdc-text-field--fullwidth">
+                    <input id="username" class="mdc-text-field__input" type="text" placeholder="email"
+                      aria-label="email" required>
+                  </div>
+
+                  <div class="mdc-text-field mdc-text-field--fullwidth">
+                      <input id="password" class="mdc-text-field__input"
+                             type="password"
+                             placeholder="password"
+                             aria-label="password"
+                             required>
+                    </div>                  
+                </div>
+              </section>
+              <footer class="mdc-dialog__actions">
+                <button type="button" class="mdc-button mdc-dialog__button mdc-ripple-upgraded"
+                  data-mdc-dialog-action="close"
+                  >Cancel</button>
+                <button type="button"
+                  class="mdc-button mdc-dialog__button--default mdc-ripple-upgraded"
+                  id="login">register</button>
+              </footer>
+            </div>
+          </div>
+        </div>
+        
       </div>
       <script type="text/template" id="search-result">
           <li class="searchresultlist mdc-list-item"  data-source="%%source%%">

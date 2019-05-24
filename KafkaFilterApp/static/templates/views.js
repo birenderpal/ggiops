@@ -194,17 +194,73 @@ export var manage ={
     }
 }
 
+export var register={
+    render:function(){        
+        this.register = MDCDialog.attachTo(document.getElementById('register-dialog'))
+        this.register.open();
+        document.getElementById('register').addEventListener('click',(e)=>{
+            console.log(e)
+            console.log("trying loging")
+            var username=document.getElementById('username').value
+            var password=document.getElementById('password').value   
+            var email=document.getElementById('email-feild').value
+            var requestData ={'username':username,'password':password,'email':email}
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("POST","/register",true)
+            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");            
+            xhttp.send(JSON.stringify(requestData));
+            xhttp.onreadystatechange =function(){
+                if (this.readyState == 4 && this.status == 200) {
+                    console.log(this.responseText)
+                    if (this.responseText.status == "register"){
+                        this.register.close()
+                    }
+                    if (this.responseText.status == "success"){
+                        this.register.close();
+                    }                    
+                }
+            }
+        })
+    },
+}
 export var login={
     init:function(){
-        this.logindialog = new MDCDialog(document.querySelector('.mdc-dialog'))
-        
+        this.logindialog = new MDCDialog(document.querySelector('.mdc-dialog'))                
     },
     render:function(){        
         this.logindialog.open();
         document.getElementById('login').addEventListener('click',(e)=>{
+            console.log(e)
+            console.log("trying loging")
             var username=document.getElementById('username').value
             var password=document.getElementById('password').value   
+            var requestData ={'username':username,'password':password}
             var xhttp = new XMLHttpRequest();
+            if (document.getElementById('login').innerText.toLowerCase()=="login"){        
+                
+                xhttp.open("POST","/login",true)
+                xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");            
+                xhttp.send(JSON.stringify(requestData));
+                xhttp.onreadystatechange =function(){
+                    if (this.readyState == 4 && this.status == 200) {
+                        console.log(this.responseText)
+                        if (this.responseText.status == "register"){
+                            this.logindialog.close()
+                            register.render()
+                        }
+                        if (this.responseText.status == "success"){
+                            this.logindialog.close();
+                        }                    
+                    }
+                }
+            }
+            else{
+                var email=document.getElementById('email-feild').value
+                requestData['email']=email
+                xhttp.open("POST","/register",true)
+                xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");            
+                xhttp.send(JSON.stringify(requestData));
+            }
         })
     },
 }
