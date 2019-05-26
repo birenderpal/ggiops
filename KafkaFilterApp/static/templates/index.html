@@ -1,294 +1,201 @@
-<!doctype html>
-<html>
-
 <head>
-
-  <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
-  <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
-
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-  <script type="text/javascript">
-    window.mdc.autoInit();
-    $(document).ready(function () {
-      $('#search').keyup(function () {
-        var searchField = $('#search').val();
-        var output = "";
-        var source = $('#link').children().text().trim()
-        $('#result-list').html('')
-        if (searchField.length >= 2) {
-          var regex = new RegExp(searchField, "i");
-          $('#result').show()
-          output = '<ul class="mdc-list mdc-list--two-line" id="result-list-items"></ul>'
-          $('#result-list').html(output)
-          var list = ""
-          $.getJSON(`/api/${source}/devices`, function (data) {                               
-            data.devices.filter((val) => {
-              if (Object.keys(val)[0].search(regex) != -1) {
-                return true
-              }
-            }).forEach((element) => {
-                console.log(element)
-                list += `
-                    <li class="mdc-list-item" onclick="itemClicked('${escape(JSON.stringify(element))}','${Object.keys(element)[0]}','${source}'); return false">
-                        <span class="mdc-list-item__text">
-                        <span class="mdc-list-item__primary-text">${Object.keys(element)[0]}</span>
-                        <span class="mdc-list-item__secondary-text">Device</span>
-                        </span>
-                    </li>
-                    <li role="separator" class="mdc-list-divider"></li>
-                    `              
-            })
-            $('#result-list-items').append(list)
-          });
-/*
-          $.getJSON(`/api/${source}/indicators`, function (data) {
-            var list = ""
-            $.each(data.indicators, function (key, val) {
-              var indicators = []
-              for (let indicator in val) {
-                indicators.push(indicator)
-              }
-              $.each(indicators, function (key, indicator) {
-                if ((indicator.search(regex) != -1)) {
-                  valString = escape(JSON.stringify(val))
-                  list += `
-                    <li class="mdc-list-item" onclick="itemClicked('${valString}','${indicator}','${source}'); return false">
-                      <span class="mdc-list-item__text">
-                      <span class="mdc-list-item__primary-text">${indicator}</span>
-                      <span class="mdc-list-item__secondary-text">Indicator</span>
-                      </span>                  
-                    </li> 
-                    <li role="separator" class="mdc-list-divider"></li>
-                    `
-                }
-                //$('#result-list-items').append(list)              
-              })
-              //$('#result-list-items').append(list)
-            });
-            $('#result-list-items').append(list)
-          });
-          */
-        }
-        else {
-          $('#result-list').html('')
-          $('#result').hide()
-        }
-      });
-    });
-    function toggle(item, e) {
-      disableObj = JSON.parse(unescape(item))
-      var url = `/api/outgoing/device/${disableObj.deviceName}/indicator/${disableObj.indicatorName}`
-      $(`#${e}`).toggleClass('mdc-switch--checked')
-      var action = $(`#${e}`).hasClass('mdc-switch--checked') ? 'POST' : 'DELETE'
-      $.ajax({
-        dataType: 'json',
-        url: `${url}`,
-        type: `${action}`,
-        success: function (data) {
-          console.log(data)
-        }
-      });
-
-    }
-    function linkLoad(link) {
-      $('#home-page').hide();
-      $('#search').val("");
-      $('#result').hide();
-      var output = `<div class="mdc-text-field-helper-text mdc-text-field-helper-text--persistent" aria-hidden="true">${link}
-              </div>`
-      $('#link').html(output)
-      $('#link-content').show()
-    }
-    function createCard(type) {
-      card = `<div class="mdc-layout-grid mdc-typography--headline6" style="background-color:#5f259f;color:white;">
-                  ${type}
-                </div>`
-      $(`#${type.toLowerCase()}-card`).html(card)
-      $.getJSON(`/api/${type.toLowerCase()}/devices`, function (data) {        
-        devtype = type.toLowerCase()
-        output = `
-        <div class="mdc-layout-grid" style="display:flex;justify-content:space-between">
-                  <p class="mdc-typography--button">Total Devices:</span>
-                    <p class="mdc-typography--button">${data.count}</p>
-                </div>`
-        $(`#${type.toLowerCase()}-card`).append(output)
-      })
-      $.getJSON(`/api/${type.toLowerCase()}/indicators`, function (data) {        
-        indtype = type.toLowerCase()
-        output = `<div class="mdc-layout-grid" style="display:flex;justify-content:space-between">
-                  <p class="mdc-typography--button">Total Indicators</p>
-                  <p class="mdc-typography--button">${data.count}</p>
-                </div>`
-        $(`#${type.toLowerCase()}-card`).append(output)
-      })
-    }
-    function toggleall(data) {
-      data = JSON.parse(unescape(data))
-      var item
-      for (let k in data) {
-        item = k
-      }
-      var url = 'indicators' in data[item] ? `/api/outgoing/device/${item}` : `/api/outgoing/indicator/${item}`
-      var action
-      $('.toggle-all').toggleClass('mdc-switch--checked');
-      if ($('.toggle-all').hasClass('mdc-switch--checked')) {
-        $('.switch-items').addClass('mdc-switch--checked');
-        action = 'POST'
-      }
-      else {
-        $('.switch-items').removeClass('mdc-switch--checked');
-        action = 'DELETE'
-      }
-      $.ajax({
-        dataType: 'json',
-        url: `${url}`,
-        type: `${action}`,
-        success: function (result) {
-          console.log(result)
-        }
-      });
-
-    }
-    function itemClicked(item, name, source) {
-      itemObj = JSON.parse(unescape(item))
-      //console.log(itemObj, source)
-      var val = itemObj[name]
-      //console.log(itemObj)
-      var arrayList = 'indicators' in val ? "indicators" : "devices"
-      var headswitchclass = val.outgoing ? ["mdc-switch mdc-switch--checked"] : ['mdc-switch']
-      headswitchclass[0] = (source == 'outgoing') ? ["mdc-switch mdc-switch--checked"] : headswitchclass[0]
-      //console.log(listitem)
-      var output = ""
-      //var switchclass = (source == 'incoming') ? ['mdc-switch']:["mdc-switch mdc-switch--checked"]
-      $("#result-list").html(output)
-      //passObj = escape(JSON.stringify(data))
-      output += `
-            <ul class="mdc-list">
-              <li class="mdc-list-item" style="display:flex;justify-content:space-between;cursor:auto;">
-                <span class="mdc-list-item__text mdc-typography--headline6">${name}</span>          
-                  <div class="${headswitchclass} toggle-all" onclick="toggleall('${item}'); return false">
-                    <div class="mdc-switch__track" ></div>
-                      <div class="mdc-switch__thumb-underlay">
-                        <div class="mdc-switch__thumb" >
-                        <input type="checkbox" id="basic-switch" class="mdc-switch__native-control" role="switch">
-                      </div>
-                    </div>                    
-                    </div>
-              </li>
-              <h3 class="mdc-list-group__subheader mdc-typography--headline6">${arrayList}</h3>
-              `
-      $("#result-list").html(output)      
-      $.each(val[arrayList], function (index, value) {
-        var listitem = {}
-        listitem = 'indicators' in val ? { "deviceName": name } : { 'indicatorName': name }        
-        var switchclass = []
-        switchclass[0] = ["mdc-switch mdc-switch--checked"]
-        var id = ""
-        if (value.__proto__.constructor.name == "Object") {
-          switchclass[0] = value.outgoing ? ["mdc-switch mdc-switch--checked"] : ["mdc-switch"]
-          'deviceName' in listitem ? id = value.indicatorName : id = value.deviceName
-          'deviceName' in listitem ? listitem['indicatorName'] = value.indicatorName : listitem['deviceName'] = value.deviceName
-        }
-        else {
-          id = value
-          'deviceName' in listitem ? listitem['indicatorName'] = value : listitem['deviceName'] = value
-        }        
-        listitem = escape(JSON.stringify(listitem))
-        output += `
-                <li class="mdc-list-item" style="display:flex;justify-content:space-between;cursor:auto;">
-                    <span class="mdc-list-item__text mdc-typography--subtitle2">${id}</span>
-                    <div class="switch-items ${switchclass}" id=${id} onclick="toggle('${listitem}','${id}'); return false">
-                          <div class="mdc-switch__track" ></div>
-                          <div class="mdc-switch__thumb-underlay">
-                            <div class="mdc-switch__thumb" >
-                              <input type="checkbox" id="basic-switch" class="mdc-switch__native-control" role="switch">
-                            </div>
-                          </div>                    
-                        </div> 
-                    </li>
-                    <li role="separator" class="mdc-list-divider"></li>`
-        $("#result-list").html(output)
-      })
-      //$("#result-list").html(output)
-    }
-
-    function home() {
-      $('#link-content').hide()
-      createCard("Incoming");
-      createCard("Outgoing");
-      $('#home-page').show()
-    }
-  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css">
+  <link rel="stylesheet" href="/static/templates/dist/bundle.css">
 </head>
 
-<body class="mdc-typography" style="background-color: #e8e8e8">
+<body class="mdc-typography">
   <div>
-    <header class="mdc-top-app-bar mdc-top-app-bar--fixed mdc-elevation--z4"
-      style="top:0px;left:0px;background-color: #5f259f">
+    <header class="mdc-top-app-bar mdc-top-app-bar--fixed mdc-elevation--z4">
       <div class="mdc-top-app-bar__row">
         <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
-          <button class="mdc-button material-icons mdc-top-app-bar__navigation-icon" onclick="home()">
+          <button class="home mdc-icon-button material-icons">
             home
           </button>
 
-          <button class="mdc-button  mdc-button--dense" style="color:white"
-            onclick="linkLoad('outgoing')">outgoing</button>
-          <button class="mdc-button  mdc-button--dense" style="color:white"
-            onclick="linkLoad('incoming')">incoming</button>
+          <button class="link-button mdc-button  mdc-button--dense">outgoing</button>
+          <button class="link-button  mdc-button  mdc-button--dense">incoming</button>
         </section>
         <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end">
-          <button class="mdc-button material-icons mdc-top-app-bar__navigation-icon"
-            style="display: flex;flex-direction: column;">
-            person
-            <span class="mdc-button__label mdc-typography--caption">Login</span>
-          </button>
-
+          <button class="login-button  mdc-button">
+              <i class="material-icons mdc-button__icon" aria-hidden="true">person</i>
+              <span id="logged-user" class="mdc-typography--caption"></span>            
+          </button>  
         </section>
+
       </div>
     </header>
 
     <main class="mdc-top-app-bar--fixed-adjust">
-      <div class="mdc-layout-grid" id="main-content" style="width: 70vw;height:auto;margin-top:10rem;">
-        <div id="link-content" style="display: none; width:50vw;margin: auto">
+      <div class="mdc-layout-grid" id="main-content">
+        <div id="link-content">
           <div
             class="mdc-text-field mdc-text-field--no-label mdc-text-field--fullwidth mdc-text-field--with-trailing-icon">
             <i class="material-icons mdc-text-field__icon">search</i>
-            <input class="mdc-text-field__input" id="search" style="border-bottom-color: #5f259f;">
+            <input type="search" class="mdc-text-field__input" id="search" style="border-bottom-color: #5f259f;">
             <div class="mdc-line-ripple"></div>
           </div>
           <div class="mdc-text-field-helper-line" id="link">
-          </div>
-          <div class="mdc-elevation--z1" style="margin-top:3rem;" id="result">
-            <div class="mdc-list-group" id="result-list" style="background-color: #ffff;">
+            <div class="mdc-text-field-helper-text mdc-text-field-helper-text--persistent" aria-hidden="true">
             </div>
           </div>
+          <div id="result">
+            <div class="mdc-list-group">
+              <ul class="mdc-list mdc-list--two-line mdc-list--dense" id="result-list">
+              </ul>
+            </div>
+          </div>
+
+
+          <div class="manage-items mdc-layout-grid mdc-elevation--z1">
+          </div>
+
         </div>
         <div id="home-page">
           <div class="mdc-layout-grid">
             <div class="mdc-layout-grid__inner">
-              <div id="incoming-card" class="mdc-layout-grid__cell--span-6 mdc-elevation--z5"
-                style="background-color:white;cursor:pointer;" href="#" onclick="linkLoad('incoming')">
-                <script>
-                  createCard("Incoming");
-                </script>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <div>
+        <div id="login-dialog" class="mdc-dialog mdc-dialog--scrollable" role="alertdialog" aria-modal="true"
+          aria-labelledby="confirmation-dialog-label" aria-describedby="confirmation-dialog-description">
+          <div class="mdc-dialog__scrim"></div>
+          <div class="mdc-dialog__container">
+            <div class="mdc-dialog__surface">
+
+              <div class="mdc-layout-grid">
+                <div class="mdc-layout-grid--iner">
+                  <div class="mdc-layout-grid__cell--span-12">
+                    <div class="mdc-form-field">
+                      <div id="username-field" class="mdc-text-field mdc-text-field--fullwidth ">
+                        <input id="username" class="mdc-text-field__input" type="text" placeholder="username"
+                          aria-label="username" required minlength=8>
+                      </div>
+                      <div id="password-field" class="mdc-text-field mdc-text-field--fullwidth ">
+                        <input id="password" class="mdc-text-field__input" type="password" placeholder="password"
+                          aria-label="password" required minlength=8>
+                      </div>
+                    </div>
+                    <h6 id="login-message" class="mdc-typography--caption"></h6>
+                  </div>
+                  <footer class="mdc-dialog__actions">
+                    <button type="button"
+                      class="mdc-button mdc-button--raised  mdc-dialog__button--default mdc-ripple-upgraded"
+                      id="login">Login</button>
+                  </footer>
+
+                </div>
               </div>
-              <div id="outgoing-card" class="mdc-layout-grid__cell--span-6 mdc-elevation--z5"
-                style="background-color:white; cursor:pointer;" href="#" onclick="linkLoad('outgoing')">
-                <script>
-                  createCard("Outgoing");
-                </script>
+            </div>
+          </div>
+        </div>
+        <div id="register-dialog" class="mdc-dialog mdc-dialog--scrollable" role="alertdialog" aria-modal="true"
+          aria-labelledby="confirmation-dialog-label" aria-describedby="confirmation-dialog-description">
+          <div class="mdc-dialog__scrim"></div>
+          <div class="mdc-dialog__container">
+            <div class="mdc-dialog__surface">
+              <div class="mdc-layout-grid">
+                <div class="mdc-layout-grid--iner">
+                  <div class="mdc-layout-grid__cell--span-12">
 
+                    <div class="mdc-form-field">
+                      <div class="mdc-text-field mdc-text-field--fullwidth">
+                        <input id="rusername" class="mdc-text-field__input" type="text" placeholder="username"
+                          aria-label="username" required minlength=8>
+                      </div>
+                      <div id="email-feild" class="mdc-text-field mdc-text-field--fullwidth">
+                        <input id="remail" class="mdc-text-field__input" type="email" placeholder="email"
+                          aria-label="email" required minlength=8>
+                      </div>
+
+                      <div class="mdc-text-field mdc-text-field--fullwidth">
+                        <input id="rpassword" class="mdc-text-field__input" type="password" placeholder="password"
+                          aria-label="password" required minlength=8>
+                      </div>
+                    </div>
+                    <h6 id="message" class="mdc-typography--caption"></h6>
+                  </div>
+                  <footer class="mdc-dialog__actions">
+                      <button type="button" class="mdc-button mdc-button--raised mdc-dialog__button mdc-ripple-upgraded"
+                        data-mdc-dialog-action="close">Cancel</button>
+                      <button type="button" class="mdc-button mdc-button--raised mdc-dialog__button--default mdc-ripple-upgraded"
+                        id="register">register</button>
+                    </footer>
+                </div>
+ 
               </div>
 
             </div>
           </div>
         </div>
-      </div>
-    </main>
-  </div>
-</body>
 
-</html>
+      </div>
+      <script type="text/template" id="search-result">
+          <li class="searchresultlist mdc-list-item"  data-source="%%source%%">
+              <span class="mdc-list-item__text">
+                  <span class="item-name mdc-list-item__primary-text">%%name%%</span>
+                  <span class="item-type mdc-list-item__secondary-text">%%type%%</span>
+              </span>
+          </li>
+        </script>
+
+      <script type="text/template" id="manage-item">
+          <div class="mdc-layout-grid__inner" style="border-bottom:solid 1px #d2d1da">
+              <div class="mdc-layout-grid__cell--span-10">
+                  <span class="%%typoclass%%">%%name%%</span>          
+              </div>
+              <div class="mdc-layout-grid__cell--span-2">
+                  <div class="%%switchclass%%">
+                      <div class="mdc-switch__track" ></div>
+                      <div class="mdc-switch__thumb-underlay">
+                          <div class="mdc-switch__thumb" >
+                              <input type="checkbox" id="%%name%%-switch" class="mdc-switch__native-control" role="switch" %%switchstatus%%>
+                          </div>
+                      </div>                                            
+                  </div>
+                  <label class="mdc-typography--caption" for="%%name%%-switch" data-url="%%url%%">%%switch%%</label>
+              </div>                  
+          </div>  
+        </script>
+
+      <script type="text/template" id="home-page">
+        </script>
+  </div>
+  </main>
+  </div>
+  <script type="text/template" id="home">
+    <div id="incoming-card" class="mdc-layout-grid__cell--span-6 mdc-elevation--z5"
+    style="background-color:white;cursor:pointer;" href="#">
+
+    <div class="mdc-layout-grid mdc-typography--headline6" style="background-color:#5f259f;color:white;">
+        %%source%%
+    </div>
+    <div class="mdc-layout-grid" style="display:flex;justify-content:space-between">
+      <p class="mdc-typography--button">Total %%type1%%:</span>
+        <p class="mdc-typography--button">%%type1_count%%</p>
+    </div>
+    <div class="mdc-layout-grid" style="display:flex;justify-content:space-between">
+      <p class="mdc-typography--button">Total %%type2%%</p>
+      <p class="mdc-typography--button">%%type2_count%%</p>
+    </div>
+  </div>
+  </script>
+
+  <script type="text/template" id="snackresponse">
+  <div class="mdc-snackbar">
+    <div class="mdc-snackbar__surface">
+      <div class="mdc-snackbar__label"
+           role="status"
+           aria-live="polite">
+        %%statusmessage%%
+      </div>
+    </div>
+  </div>
+</script>
+  <script src="/static/templates/dist/bundle.js" async></script>
+</body>

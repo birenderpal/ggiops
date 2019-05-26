@@ -1,9 +1,8 @@
 '''
 Created on 23/04/2018
 
-@author: t821012
+@author: Birender Pal
 '''
-import urllib
 from KafkaFilterApp.model.User import User
 import json
 from KafkaFilterApp import db,bcrypt,login_manager
@@ -25,6 +24,14 @@ def get_current_user():
 def load_user(id):
     print(User.query.get(id))
     return User.query.get(id)
+
+
+@app_auth.route('/authenticate',methods=['GET'])
+def validate():
+    if not current_user.is_anonymous:
+        return jsonify({'username':current_user.username,'authenticated':current_user.is_authenticated})
+    else:
+        return jsonify({'username':None,'authenticated':False})
 
 @app_auth.route('/login', methods=['POST'])
 def login():
@@ -48,7 +55,6 @@ def login():
 
 
 @app_auth.route('/logout', methods=['POST'])
-@login_required
 def logout():
     logout_user()
     return jsonify({'status':'success'})
@@ -56,16 +62,16 @@ def logout():
 
 @app_auth.route('/register', methods=['GET', 'POST'])
 def register():
-
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
+        content = request.form.keys()[0]
+        content = json.loads(content)
+        username = content['username']
+        email = content['email']
+        password = content['password']
         print(username,email,password)
         user = User.query.filter_by(username=username).first()
         user_email = User.query.filter_by(email=email).first()
         if user:
-            #print(user)
             return jsonify({'status':'user exists'})
         elif user_email:
             return jsonify({'status':'email already in use'})
@@ -73,5 +79,4 @@ def register():
             new_user=User(username=username,email=email,password=password)
             db.session.add(new_user)
             db.session.commit()            
-            #return "User Added"
             return jsonify({'status':'success'})

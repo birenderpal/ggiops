@@ -5,15 +5,11 @@ import { MDCRipple } from '@material/ripple';
 import { MDCList } from '@material/list';
 import {search, links, manage,login} from './views';
 
-
-
-
 const list = new MDCList(document.querySelector('.mdc-list'));
 const searchHelperText = new MDCTextFieldHelperText(document.querySelector('.mdc-text-field-helper-text'));
 const topAppBar = new MDCTopAppBar(document.querySelector('.mdc-top-app-bar'));
 const searchTextField = new MDCTextField(document.querySelector('.mdc-text-field'));
 const linkContent = document.getElementById('link-content')
-const manageItem = document.querySelector('.manage-items')
 var listSearchItems = [];
 linkContent.style.display = "none";
 
@@ -31,7 +27,15 @@ document.querySelectorAll('.mdc-icon-button').forEach(button => {
     MDCRipple.attachTo(button).unbounded = true;
 })
 
-
+window.onload=(e)=>{
+    fetch('/authenticate')
+    .then(response=>{return response.json()})
+    .then(res=>{
+        if (res.authenticated){
+            document.getElementById('logged-user').innerText=`logged as ${res.username}`
+        }
+    })
+}
 
 
 const linkButtons = document.querySelectorAll('.link-button');

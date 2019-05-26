@@ -11,6 +11,6 @@ class ProductionConfig(BaseConfig):
     DEBUG=False
 
 class TestConfig(BaseConfig):    
-    BOOTSTRAP_SERVERS=['capltda28:9092']
+    BOOTSTRAP_SERVERS=['virdevserver:9092']
     SQLALCHEMY_DATABASE_URI='sqlite:///KafkaFilterApp.db'
     BCRYPT_LOG_ROUNDS=4

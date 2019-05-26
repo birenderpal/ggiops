@@ -2,6 +2,7 @@ import {MDCSnackbar} from '@material/snackbar';
 import {MDCSwitch} from '@material/switch';
 import {MDCDialog} from '@material/dialog';
 import classNames from 'classnames';
+import { MDCTextField } from '@material/textfield';
 
 //
 //    Get all templates here
@@ -153,6 +154,11 @@ export var manage ={
             this.source=source
             this.type=type
             this.name=name
+            fetch('/authenticate')
+            .then(response=>{return response.json()})
+            .then(res=>{
+                this.authenticated = res.authenticated
+            })
     },
     render:function(){
         fetch(`/api/${this.source}/${this.type}/${this.name}`)
@@ -168,14 +174,14 @@ export var manage ={
             var secondType = Object.keys(details).toString().substr(0,Object.keys(details).toString().length -1);
             manageHTML += manageTemplate.replace(/%%name%%/g,Object.keys(json).toString())
                                         .replace(/%%typoclass%%/g,classNames('mdc-typography--headline6'))
-                                        .replace(/%%switchclass%%/g,classNames('mdc-switch',{'mdc-switch--checked':Object.values(json)[0].outgoing}))
+                                        .replace(/%%switchclass%%/g,classNames('mdc-switch',{'mdc-switch--checked':Object.values(json)[0].outgoing},{'mdc-switch--disabled':!this.authenticated}))
                                         .replace(/%%switch%%/g,classNames({'All' : Object.values(json)[0].outgoing,"None":!Object.values(json)[0].outgoing}))
                                         .replace(/%%switchstatus%%/g,classNames({'checked':Object.values(json)[0].outgoing}))
                                         .replace(/%%url%%/g,`${this.type}/${Object.keys(json).toString()}`)
             Object.values(details)[0].forEach(item=>{
                         var name=Object.assign({},item)
                         delete name.outgoing                                        
-                        manageHTML += manageTemplate.replace(/%%switchclass%%/g,classNames('mdc-switch',{'mdc-switch--checked':item.outgoing}))
+                        manageHTML += manageTemplate.replace(/%%switchclass%%/g,classNames('mdc-switch',{'mdc-switch--checked':item.outgoing},{'mdc-switch--disabled':!this.authenticated}))
                                                     .replace(/%%typoclass%%/g,classNames('mdc-typography--subtitle1'))
                                                     .replace(/%%switch%%/g,classNames({'enabled' : item.outgoing,'disabled':!item.outgoing}))
                                                     .replace(/%%name%%/g,Object.values(name).toString())
@@ -196,70 +202,90 @@ export var manage ={
 
 export var register={
     render:function(){        
-        this.register = MDCDialog.attachTo(document.getElementById('register-dialog'))
+        this.registerElem = document.getElementById('register-dialog')
+        this.register = MDCDialog.attachTo(this.registerElem)
         this.register.open();
+
         document.getElementById('register').addEventListener('click',(e)=>{
-            console.log(e)
-            console.log("trying loging")
-            var username=document.getElementById('username').value
-            var password=document.getElementById('password').value   
-            var email=document.getElementById('email-feild').value
+            var username=document.getElementById('rusername').value
+            var password=document.getElementById('rpassword').value   
+            var email=document.getElementById('remail').value
             var requestData ={'username':username,'password':password,'email':email}
             var xhttp = new XMLHttpRequest();
             xhttp.open("POST","/register",true)
             xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");            
             xhttp.send(JSON.stringify(requestData));
+            var register = this.register
             xhttp.onreadystatechange =function(){
                 if (this.readyState == 4 && this.status == 200) {
                     console.log(this.responseText)
-                    if (this.responseText.status == "register"){
-                        this.register.close()
-                    }
-                    if (this.responseText.status == "success"){
-                        this.register.close();
+                    var res = JSON.parse(this.responseText)
+                    if (res.status == "success"){
+                        register.close();
                     }                    
+                    else{
+                        document.getElementById('message').innerText=res.status                        
+                    }
                 }
             }
         })
-    },
+    }
 }
 export var login={
     init:function(){
-        this.logindialog = new MDCDialog(document.querySelector('.mdc-dialog'))                
+        this.logindialogElem = document.getElementById('login-dialog')
+        this.logindialog = MDCDialog.attachTo(this.logindialogElem)        
+        var userFieldElem = document.getElementById('username-field')
+        this.userField = MDCTextField.attachTo(userFieldElem)
+        this.logindialog.layout(this.userField)
+        document.getElementById('username').value=""
+        document.getElementById('password').value=""
     },
-    render:function(){        
-        this.logindialog.open();
+    render:function(){
+        var xhttp = new XMLHttpRequest();
+        fetch('/authenticate')
+        .then(response=>{return response.json()})
+        .then(res=>{
+            if (res.authenticated){
+                xhttp.open("POST","/logout",true)                
+                xhttp.send();  
+                this.action="logout"
+                document.getElementById('logged-user').innerText=""
+                this.logindialog.close()
+            }
+            else{
+                this.action="login"
+                this.logindialog.open();
+            }
+        }) 
         document.getElementById('login').addEventListener('click',(e)=>{
-            console.log(e)
-            console.log("trying loging")
             var username=document.getElementById('username').value
             var password=document.getElementById('password').value   
             var requestData ={'username':username,'password':password}
-            var xhttp = new XMLHttpRequest();
-            if (document.getElementById('login').innerText.toLowerCase()=="login"){        
-                
+
+            if (this.action=="login"){   
                 xhttp.open("POST","/login",true)
                 xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");            
                 xhttp.send(JSON.stringify(requestData));
+                var logindialog = this.logindialog
                 xhttp.onreadystatechange =function(){
                     if (this.readyState == 4 && this.status == 200) {
-                        console.log(this.responseText)
-                        if (this.responseText.status == "register"){
-                            this.logindialog.close()
+                        var res = JSON.parse(this.responseText)    
+                        if (res.status == "register"){
+                            logindialog.close()
                             register.render()
                         }
-                        if (this.responseText.status == "success"){
-                            this.logindialog.close();
-                        }                    
+                        else if (res.status == "success"){
+                            document.getElementById('logged-user').innerText=`loged as ${username}`
+                            logindialog.close();
+                        } 
+                        else{
+                            var loginMsgElem = document.getElementById('login-message')
+                            logindialog.layout(loginMsgElem)
+                            loginMsgElem.innerText=res.status
+                        }                   
                     }
                 }
-            }
-            else{
-                var email=document.getElementById('email-feild').value
-                requestData['email']=email
-                xhttp.open("POST","/register",true)
-                xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");            
-                xhttp.send(JSON.stringify(requestData));
             }
         })
     },
