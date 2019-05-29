@@ -30,7 +30,8 @@ class KafkaClient():
         req = httplib2.Http()
         
         response,messages = (req.request(karg['url'],'GET')) 
-        return (json.loads(messages))
+        messages = json.loads(messages,strict=False)
+        return messages
         
     def get_list(self,**karg):
         """returns a list with values from kafka messages, 

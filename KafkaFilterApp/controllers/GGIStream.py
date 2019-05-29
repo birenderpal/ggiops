@@ -34,14 +34,15 @@ class GGIStream():
             url=self.OUTGOING, message_type="outgoing", message_key="deviceName")
 
         if 'device' not in karg:
-            device = {}
+            devices = {}
 
             if 'source' in karg:
                 message_type = karg['source']
                 url = self.OUTGOING if message_type == "outgoing" else self.INCOMING
-                devices = {'count': len(outgoing_device_list), 'devices': []} if message_type == "outgoing" else {
-                    'count': len(incoming_device_list), 'devices': []}
-
+                #devices = {'count': len(outgoing_device_list), 'devices': []} if message_type == "outgoing" else {
+                #    'count': len(incoming_device_list), 'devices': []}
+                devices['devices'] = outgoing_device_list if message_type == "outgoing" else incoming_device_list
+                '''
                 if message_type == "outgoing":
 
                     for device in outgoing_device_list:
@@ -92,20 +93,15 @@ class GGIStream():
                             device_details[device]['indicators'] = indicators
 
                         devices['devices'].append(device_details)
-
+                '''
             else:
 
                 devices = {'devices':
-                           {'incoming':
-                            {'count': len(incoming_device_list),
-                             'devices': []
-                             },
-                            'outgoing':
-                            {'count': len(outgoing_device_list),
-                             'devices': []
-                             }
+                           {'incoming': incoming_device_list,
+                            'outgoing': outgoing_device_list
                             }
                            }
+                '''
                 for in_device in incoming_device_list:
                     device_indicators = rpc_client.get_grouped_list(
                         url=self.INCOMING, message_type="incoming", message_key="indicatorName", group_by=in_device)
@@ -139,7 +135,7 @@ class GGIStream():
                     devices['devices']['outgoing']['devices'].append(
                         {out_device: {'indicators': device_indicators[out_device]['list'],
                                       'count': device_indicators[out_device]['count']}})
-
+                '''
             return devices
 
         else:
@@ -181,14 +177,19 @@ class GGIStream():
                             'outgoing': True, 'count': device_indicators[device]['count']}
 
                         for indicator in device_indicators[device]['list']:
+                            ind_detail={}
+                            ind_detail['indicatorName']=indicator
+                            ind_detail['outgoing']=False
 
                             if indicator in outgoing_indicators[device]['list']:
-                                indicators.append(
-                                    {'indicatorName': indicator, 'outgoing': True})
+                                ind_detail['outgoing']=True
 
+                            indicators.append(ind_detail)
+                            '''
                             else:
                                 indicators.append(
                                     {'indicatorName': indicator, 'outgoing': False})
+                            '''
                         device_details[device]['indicators'] = indicators
                     else:
                         device_details[device] = {
@@ -251,10 +252,13 @@ class GGIStream():
             if 'source' in karg:
                 message_type = karg['source']
                 url = self.OUTGOING if message_type == "outgoing" else self.INCOMING
+                '''
                 indicators = {'count': len(outgoing_indicators_list), 'indicators': []} \
                     if message_type == "outgoing" \
                     else {'count': len(incoming_indicators_list), 'indicators': []}
-
+                '''
+                indicators['indicators'] = outgoing_indicators_list if message_type == "outgoing" else incoming_indicators_list
+                '''
                 if message_type == "outgoing":
 
                     for indicator in outgoing_indicators_list:
@@ -301,19 +305,14 @@ class GGIStream():
                             indicator_details[indicator]['devices'] = devices
 
                         indicators['indicators'].append(indicator_details)
+                '''
             else:
                 indicators = {'indicators':
-                              {'incoming':
-                                  {'count': len(incoming_indicators_list),
-                                   'indicators': []
-                                   },
-                               'outgoing':
-                                  {'count': len(outgoing_indicators_list),
-                                   'indicators': []
-                                   }
+                              {'incoming':incoming_indicators_list,
+                               'outgoing':outgoing_indicators_list
                                }
                               }
-
+                '''
                 for in_indicator in incoming_indicators_list:
                     indicator_devices = rpc_client.get_grouped_list(
                         url=self.INCOMING, message_type="incoming", message_key="deviceName", group_by=in_indicator)
@@ -353,7 +352,7 @@ class GGIStream():
                         url=self.OUTGOING, message_type="outgoing", message_key="indicatorName", group_by=out_indicator)
                     indicators['indicators']['outgoing']['indicators'].append({out_indicator: {
                                                                               'devices': indicator_devices[out_indicator]['list'], 'count': indicator_devices[out_indicator]['count']}})
-
+                '''
             return indicators
 
         else:

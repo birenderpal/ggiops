@@ -70,7 +70,7 @@ export var links = {
         .then(response => { return response.json() })
         .then(json => {
             json.devices.forEach(device => {
-                listSearchItems.push({ 'name': Object.keys(device).toString(), 'type': 'device','source':source })
+                listSearchItems.push({ 'name': device, 'type': 'device','source':source })
             })
         })
         fetch(`/api/${this.source}/indicators`)
@@ -78,7 +78,7 @@ export var links = {
         .then(json => {
             var list = []
             json.indicators.forEach(indicator => {
-                listSearchItems.push({ 'name': Object.keys(indicator).toString(), 'type': 'indicator','source':source })
+                listSearchItems.push({ 'name': indicator, 'type': 'indicator','source':source })
             })
         })
         return listSearchItems

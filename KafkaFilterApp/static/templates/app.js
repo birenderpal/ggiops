@@ -41,10 +41,14 @@ window.onload=(e)=>{
 const linkButtons = document.querySelectorAll('.link-button');
 
 const linkClicked = (e) => {
+    //const startTime = performance.now();
     var source = e.srcElement.innerHTML;
     listSearchItems.length = 0;
     listSearchItems = links.init(source)
     links.render()
+    //const duration = performance.now() - startTime;    
+    //console.log(`linkClicked took ${duration}ms`);
+    //console.log(listSearchItems)
 }
 const searchEvent = (e) => {
     var regex = new RegExp(e.srcElement.value, "i");
