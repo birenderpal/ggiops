@@ -8,7 +8,7 @@ import datetime
 import json
 import httplib2
 import urllib
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request,abort
 from flask_restplus import Resource,Api
 from KafkaFilterApp.controllers.GGIStream import GGIStream
 api = Api(app=app,doc="/api/docs",version=1.0,title="Filter Stream app")
@@ -17,6 +17,8 @@ api = Api(app=app,doc="/api/docs",version=1.0,title="Filter Stream app")
 class Source(Resource):
     def get(self,source):
         ggi_app = GGIStream()
+        if source not in ["incoming","outgoing"]:
+            abort(404,"Invalid source")
         devices= ggi_app.get_devices(source=source)
         indicators= ggi_app.get_indicators(source=source)
         return jsonify({source:[devices,indicators]})

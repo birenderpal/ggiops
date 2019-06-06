@@ -3,7 +3,7 @@ import { MDCTextField } from '@material/textfield';
 import { MDCTextFieldHelperText } from '@material/textfield/helper-text';
 import { MDCRipple } from '@material/ripple';
 import { MDCList } from '@material/list';
-import {search, links, manage,login} from './views';
+import {search, links, manage,login,home} from './views';
 
 const list = new MDCList(document.querySelector('.mdc-list'));
 const searchHelperText = new MDCTextFieldHelperText(document.querySelector('.mdc-text-field-helper-text'));
@@ -32,7 +32,10 @@ window.onload=(e)=>{
     .then(response=>{return response.json()})
     .then(res=>{
         if (res.authenticated){
-            document.getElementById('logged-user').innerText=`logged as ${res.username}`
+            document.getElementById('logged-user').innerText=res.username
+        }
+        else{
+            document.getElementById('logged-user').innerText="anonymous"
         }
     })
 }
@@ -79,8 +82,10 @@ const searchInput = document.getElementById('search');
 searchInput.addEventListener('keyup', searchEvent);
 
 
-document.querySelector('.home').addEventListener('click', () => {
+document.querySelector('.home').addEventListener('click', (e) => {
     linkContent.style.display = "none";
+    home.init()
+    home.render()
 });
 
 
@@ -88,9 +93,6 @@ linkButtons.forEach(linkButton => {
     linkButton.addEventListener('click', linkClicked);
 });
 
-document.querySelector('.home').addEventListener('click', (e) => {
-    home.init()
-})
 
 document.querySelector('.login-button').addEventListener('click',()=>{    
     login.init()

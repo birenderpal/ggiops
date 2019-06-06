@@ -3,6 +3,7 @@ import {MDCSwitch} from '@material/switch';
 import {MDCDialog} from '@material/dialog';
 import classNames from 'classnames';
 import { MDCTextField } from '@material/textfield';
+import * as d3 from "d3";
 
 //
 //    Get all templates here
@@ -97,16 +98,82 @@ export var links = {
     }
 }
 
-export var home ={
-    init:()=>{
+export var home ={    
+    init:function(){
         linkContent.style.display="none";
-        homePage.display.style="";
-        manageItem.innerHTML=""
+        //homePage.display.style="";
+        manageItem.innerHTML=""        
     },
-    render:()=>{
+    render:function(){
+        var height=360;
+        var width=360;
+        var padding = 10;
+ 
+        var svg1=d3.select("#svg1").append("svg")
+        svg1.attr("width",width)
+        svg1.attr("height",height)
+        var svg2=d3.select("#svg2").append("svg")
+        svg2.attr("width",width)
+        svg2.attr("height",height)
+        fetch("/api/devices")
+        .then(response=>{return response.json()})
+        .then((res)=>{   
+            var dataset=[["incoming",res.devices.incoming.length],["outgoing",res.devices.outgoing.length]]
+            var scale = d3.scaleLinear()
+            scale.domain([0,d3.max(dataset,(d)=>d[1])])
+            scale.range([0,height - padding])
+            svg1.selectAll("rect")
+            .data(dataset)
+            .enter()
+            .append("rect")
+            .attr("x",(d,i)=>{return i*30})
+            .attr("y",(d,i)=>{return height - scale(d[1]) - padding})
+            .attr("height",(d,i)=>{return scale(d[1])})
+            .attr("width",25)
+            .attr("fill","teal")
+            .attr("class","bar")
+            .append("title")
+            .text((d)=>{return d[0]})
+            svg1.selectAll("text")
+            .data(dataset)
+            .enter()
+            .append("text")
+            .attr("x",(d,i)=>{return i*50})
+            .attr("y",(d,i)=>{return height - scale(d[1]) - padding -3})
+            .text((d)=>d[1])        
+        })
+        fetch("/api/indicators")
+        .then(response=>{return response.json()})
+        .then((res)=>{
+            var dataset=[["incoming",res.indicators.incoming.length],["outgoing",res.indicators.outgoing.length]]
+            var scale = d3.scaleLinear()
+            scale.domain([0,d3.max(dataset,(d)=>d[1])])
+            scale.range([0,height - padding])
+            svg2.selectAll("rect")
+            .data(dataset)
+            .enter()
+            .append("rect")
+            .attr("x",(d,i)=>{return i*30})
+            .attr("y",(d,i)=>{return height - scale(d[1]) - padding})
+            .attr("height",(d,i)=>{return scale(d[1])})
+            .attr("width",25)
+            .attr("fill","teal")
+            .attr("class","bar")
+            .append("title")
+            .text((d)=>{return d[0]})
+            svg2.selectAll("text")
+            .data(dataset)
+            .enter()
+            .append("text")
+            .attr("x",(d,i)=>{return i*50})
+            .attr("y",(d,i)=>{return height - scale(d[1]) - padding -3})
+            .text((d)=>d[1])            
+        })
+
         
+        }
     }
-}
+
 const toggleSwitch = (e) => {
     e.srcElement.labels[0].innerText =
         classNames({

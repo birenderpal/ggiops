@@ -4,6 +4,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css">
   <link rel="stylesheet" href="/static/templates/dist/bundle.css">
+  <script src="https://d3js.org/d3.v5.min.js"></script>
 </head>
 
 <body class="mdc-typography">
@@ -53,9 +54,15 @@
           </div>
 
         </div>
-        <div id="home-page">
+        <div id="home">
           <div class="mdc-layout-grid">
             <div class="mdc-layout-grid__inner">
+              <div id="svg1" class="mdc-layout-grid__cell--span-6">
+                  SVG1
+              </div>
+              <div id="svg2 "class="mdc-layout-grid__cell--span-6">
+                  SVG2
+                </div>
             </div>
           </div>
         </div>
@@ -168,7 +175,7 @@
   </div>
   </main>
   </div>
-  <script type="text/template" id="home">
+  <script type="text/template" id="home-none">
     <div id="incoming-card" class="mdc-layout-grid__cell--span-6 mdc-elevation--z5"
     style="background-color:white;cursor:pointer;" href="#">
 

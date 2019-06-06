@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "classnames": "^2.2.6",
+    "d3": "^5.9.2",
     "material-components-web": "^2.2.0"
   }
 }
