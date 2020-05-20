@@ -10,7 +10,7 @@ Flask-Login==0.4.1
 flask-restplus==0.12.1
 Flask-SQLAlchemy==2.4.0
 functools32==3.2.3.post2
-httplib2==0.12.1
+httplib2==0.18.0
 itsdangerous==1.1.0
 Jinja2==2.10.1
 jsonschema==3.0.1
